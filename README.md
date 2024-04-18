@@ -28,7 +28,7 @@ As of this writing, this is a work in progress. See TODO.md for more information
 
 ## Overview of Major Architectural Goals:
 1) This code implements a set of interfaces intended to replace the Selenium interfaces, and to handle all the synchronization for you.
-3) Implement flows (also sometimes called storyboards), and strict encapulation between tests, flows, and pages.
+3) Implement flows (also sometimes called storyboards), and strict encapsulation between tests, flows, and pages.
 4) Demonstrate "engine-based-testing", where an engine can validate all the controls on a given page.
 5) Portray code that can gather all the errors, not just stop at the first one.
 
@@ -42,7 +42,7 @@ The demo tests run on either nose2 or pytest.
 ## Terminology:
 - Assertion - Assertions are condition tests which prove that the test can continue or not. Failed assertions are almost always "Errors".
 - Error - This means the test experienced an error and was unable to complete. This is not the same as a "failure".
-- Failure - This means that the thing the test was actually testing didn't meet expectations. This may mean something as small as a control which was the wrong color, it's noted and the test continues. Validattions can usually be marked with the keyword `fatal`. If the call has `fatal=True`, that means if it fails, raise an exception.
+- Failure - This means that the thing the test was actually testing didn't meet expectations. This may mean something as small as a control which was the wrong color, it's noted and the test continues. Validations can usually be marked with the keyword `fatal`. If the call has `fatal=True`, that means if it fails, raise an exception.
 - Validate - this means to perform a test that, if it fails, means a test failure. Sometimes Validations with fatal=True are ALSO errors.
 
 ## Setup
