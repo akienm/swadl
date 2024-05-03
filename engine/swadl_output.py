@@ -3,7 +3,7 @@
 
 import os
 
-from seleniumpoc.SWADL.SWADLhelpers import get_timestamp
+from engine.swadl_helpers import get_timestamp
 
 
 class Output():

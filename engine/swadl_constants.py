@@ -11,7 +11,7 @@ from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.edge.webdriver import WebDriver as EdgeDriver
 
 # SWADL libs
-from seleniumpoc.SWADL.SWADLconfig_dict import ConfigDict
+from engine.swadl_config_dict import ConfigDict
 
 # Section: Don't clutter up the workspace. Adding this here makes PYTHONDONTWRITEBYTECODE
 # less important.

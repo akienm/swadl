@@ -1,8 +1,8 @@
 # File: google_search_flow
 # Purpose: Unit test and demo
 
-from seleniumpoc.demos.google_results_page import GoogleResultSection
-from seleniumpoc.demos.google_search_page import GoogleSearchPage
+from demos.google_results_page import GoogleResultSection
+from demos.google_search_page import GoogleSearchPage
 
 
 class GoogleFlows():

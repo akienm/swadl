@@ -3,8 +3,8 @@
 # Purpose: Akien's first unit tests for SWADL
 import logging
 
-from swadl.demos.google_search_flow import GoogleFlows
-from SWADL.SWADLtest import SWADLTest
+from demos.google_search_flow import GoogleFlows
+from engine.swadl_test import SWADLTest
 
 
 logger = logging.getLogger(__name__)

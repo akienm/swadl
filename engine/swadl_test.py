@@ -4,13 +4,13 @@
 from pprint import pformat
 import unittest
 
-from seleniumpoc.SWADL.SWADLbase import SWADLBase
-from swadl.engine.swadl_constants import cfgdict
-from swadl.engine.swadl_constants import FAILURE_LOG
-from swadl.engine.swadl_constants import RESULT_LOG
-from swadl.engine.swadl_constants import TEST_NAME
-from seleniumpoc.SWADL.SWADLcontrol import accumulated_failures
-from seleniumpoc.SWADL.SWADLoutput import Output
+from engine.swadl_base import SWADLBase
+from engine.swadl_constants import cfgdict
+from engine.swadl_constants import FAILURE_LOG
+from engine.swadl_constants import RESULT_LOG
+from engine.swadl_constants import TEST_NAME
+from engine.swadl_control import accumulated_failures
+from engine.swadl_output import Output
 
 
 class SWADLTest(unittest.TestCase, SWADLBase):

@@ -8,28 +8,28 @@ import time
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 
-from seleniumpoc.SWADL.SWADLbase import SWADLBase
-from swadl.engine.swadl_constants import CACHE
-from swadl.engine.swadl_constants import CLICK
-from swadl.engine.swadl_constants import cfgdict
-from swadl.engine.swadl_constants import ENABLED
-from swadl.engine.swadl_constants import EXIST
-from swadl.engine.swadl_constants import FAILURE_LOG
-from swadl.engine.swadl_constants import RESULT_LOG
-from swadl.engine.swadl_constants import SELENIUM_CONTROL_DEFAULT_TIMEOUT
-from swadl.engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
-from swadl.engine.swadl_constants import UNIQUE
-from swadl.engine.swadl_constants import VALIDATE_CLICK
-from swadl.engine.swadl_constants import VALIDATE_ENABLED
-from swadl.engine.swadl_constants import VALIDATE_EXIST
-from swadl.engine.swadl_constants import VALIDATE_INPUT
-from swadl.engine.swadl_constants import VALIDATE_TEXT
-from swadl.engine.swadl_constants import VALIDATE_UNIQUE
-from swadl.engine.swadl_constants import VALIDATE_VISIBLE
-from swadl.engine.swadl_constants import VALUE
-from swadl.engine.swadl_constants import VISIBLE
-from seleniumpoc.SWADL.SWADLhelpers import get_timestamp
-from seleniumpoc.SWADL.SWADLoutput import Output
+from engine.swadl_base import SWADLBase
+from engine.swadl_constants import CACHE
+from engine.swadl_constants import CLICK
+from engine.swadl_constants import cfgdict
+from engine.swadl_constants import ENABLED
+from engine.swadl_constants import EXIST
+from engine.swadl_constants import FAILURE_LOG
+from engine.swadl_constants import RESULT_LOG
+from engine.swadl_constants import SELENIUM_CONTROL_DEFAULT_TIMEOUT
+from engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
+from engine.swadl_constants import UNIQUE
+from engine.swadl_constants import VALIDATE_CLICK
+from engine.swadl_constants import VALIDATE_ENABLED
+from engine.swadl_constants import VALIDATE_EXIST
+from engine.swadl_constants import VALIDATE_INPUT
+from engine.swadl_constants import VALIDATE_TEXT
+from engine.swadl_constants import VALIDATE_UNIQUE
+from engine.swadl_constants import VALIDATE_VISIBLE
+from engine.swadl_constants import VALUE
+from engine.swadl_constants import VISIBLE
+from engine.swadl_helpers import get_timestamp
+from engine.swadl_output import Output
 
 logger = logging.getLogger(__name__)
 

@@ -3,11 +3,11 @@
 
 import logging
 
-from swadl.engine.swadl_constants import cfgdict
-from swadl.engine.swadl_constants import NAME
-from swadl.engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
-from swadl.engine.swadl_constants import VALIDATE_VISIBLE
-from seleniumpoc.SWADL.SWADLbase import SWADLBase
+from engine.swadl_constants import cfgdict
+from engine.swadl_constants import NAME
+from engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
+from engine.swadl_constants import VALIDATE_VISIBLE
+from engine.swadl_base import SWADLBase
 
 logger = logging.getLogger(__name__)
 

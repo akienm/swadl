@@ -3,9 +3,9 @@
 
 import logging
 
-from swadl.engine.swadl_constants import VALIDATE_VISIBLE
-from seleniumpoc.SWADL.SWADLcontrol import SWADLControl
-from seleniumpoc.SWADL.SWADLpagesection import SWADLPageSection
+from engine.swadl_constants import VALIDATE_VISIBLE
+from engine.swadl_control import SWADLControl
+from engine.swadl_pagesection import SWADLPageSection
 
 logger = logging.getLogger(__name__)
 

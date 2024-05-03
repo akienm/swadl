@@ -5,11 +5,11 @@ import gc
 import inspect
 import time
 
-from swadl.engine.swadl_constants import cfgdict
-from swadl.engine.swadl_constants import driver
-from swadl.engine.swadl_constants import SUBSTITUTION_SOURCES
-from swadl.engine.swadl_constants import TEST_NAME
-from swadl.engine.swadl_constants import TIMEOUT
+from engine.swadl_constants import cfgdict
+from engine.swadl_constants import driver
+from engine.swadl_constants import SUBSTITUTION_SOURCES
+from engine.swadl_constants import TEST_NAME
+from engine.swadl_constants import TIMEOUT
 
 
 class SWADLBase(object):
