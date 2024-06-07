@@ -180,8 +180,9 @@ def create_edge_webdriver():
 
     # And now we make our driver
     driver = edge_driver_class(
-        executable_path='msedgedriver.exe',
-        port=cfgdict[SELENIUM_PORT],
+        # executable_path='IEDriverServer.exe',
+        binary='IEDriverServer.exe',
+        # port=cfgdict[SELENIUM_PORT],
         # options=options,  # TODO: This failed but shouldn't have, research it!
         capabilities=capabilities,
     )

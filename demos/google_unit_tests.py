@@ -4,13 +4,13 @@
 import logging
 
 from demos.google_search_flow import GoogleFlows
-from engine.swadl_test import SWADLTest
+import engine.swadl_test
 
 
 logger = logging.getLogger(__name__)
 
 
-class TestGoogleSearchSWADLUnitTests(SWADLTest):
+class TestGoogleSearchSWADLUnitTests(engine.swadl_test.SWADLTest):
     # Class: TestGoogleSearchSWADLUnitTests
     # Purpose: Unit tests for SWADL
 
