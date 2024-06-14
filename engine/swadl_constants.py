@@ -181,10 +181,10 @@ def create_edge_webdriver():
     # And now we make our driver
     driver = edge_driver_class(
         # executable_path='IEDriverServer.exe',
-        binary='IEDriverServer.exe',
+        service='C:\automation\dev\src\swadl\bin\IEDriverServer.exe',
         # port=cfgdict[SELENIUM_PORT],
         # options=options,  # TODO: This failed but shouldn't have, research it!
-        capabilities=capabilities,
+        # capabilities=capabilities,
     )
 
     return driver

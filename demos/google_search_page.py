@@ -24,7 +24,13 @@ class GoogleSearchPage(SWADLPageSection):
             selector='[name="q"]',
             validation={VALIDATE_VISIBLE: True},
         )
-        self.validate_loaded_queue = [self.search_box]
+        self.google_search_button = SWADLControl(
+            index=0,
+            name="google_search_button",
+            selector='[value="Google Search"]',
+            validation={VALIDATE_VISIBLE: True},
+        )
+        self.validate_loaded_queue = [self.search_box, self.google_search_button]
 
     def do_search(self, search_key):
         # Method: do_search
