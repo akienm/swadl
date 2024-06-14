@@ -180,8 +180,8 @@ def create_edge_webdriver():
 
     # And now we make our driver
     driver = edge_driver_class(
-        # executable_path='IEDriverServer.exe',
-        # service='C:\automation\dev\src\swadl\bin\IEDriverServer.exe',
+        # executable_path='BONKIEDriverServer.exe',
+        # service='C:\automation\dev\src\swadl\bin\BONKIEDriverServer.exe',
         # port=cfgdict[SELENIUM_PORT],
         # options=options,  # TODO: This failed but shouldn't have, research it!
         # capabilities=capabilities,
