@@ -7,6 +7,9 @@ goto done
 :keep_going
 cd %SWADL_HOME%
 cd demos
-::pytestrunner google_unit_tests.py
-nose2runner google_unit_tests
+if %1.==p. (
+    pytestrunner google_unit_tests.py
+) else (
+    nose2runner google_unit_tests
+)
 :done

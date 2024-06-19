@@ -6,10 +6,11 @@ import unittest
 
 from engine.swadl_base import SWADLBase
 from engine.swadl_cfg import cfgdict
-from engine.swadl_constants import FAILURE_LOG
+from engine.swadl_constants import FAILURE_LOG, TEST_OBJECT
 from engine.swadl_constants import RESULT_LOG
 from engine.swadl_constants import TEST_NAME
 from engine.swadl_control import accumulated_failures
+from engine.swadl_dict import SWADLDict
 from engine.swadl_output import Output
 
 
@@ -21,6 +22,8 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         # Method: setUp()
         # Purpose: Sets up the test
         self.parent = None  # because tests don't need one
+        self.test_data = SWADLDict()
+        self.test_data[TEST_OBJECT] = self
         # now extract the test name
         # This works for Nose2, it is unknown as of this writing whether it will work for pytrest
         extracted_name = self.__str__()

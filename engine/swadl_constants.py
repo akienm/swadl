@@ -34,6 +34,7 @@ SELECTED_CAPS = "SELECTED_CAPS"
 SUBSTITUTION_SOURCES = "substitution_sources"
 TEST_NAME = 'test_name'
 TEST_SET_FILE = "test_set_file"
+TEST_OBJECT = 'TEST_OBJECT'
 TIMEOUT = "timeout"
 UNIQUE = "unique"
 VALIDATE_CLICKABLE = "validate_clickable"

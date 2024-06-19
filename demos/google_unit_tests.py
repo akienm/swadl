@@ -3,6 +3,7 @@
 # Purpose: Akien's first unit tests for SWADL
 import logging
 
+from flows.google_search_constants import SEARCH_KEY, SEARCH_RESULT
 from flows.google_search_flow import GoogleFlows
 import engine.swadl_test
 
@@ -15,7 +16,7 @@ class TestGoogleSearchSWADLUnitTests(engine.swadl_test.SWADLTest):
     # Purpose: Unit tests for SWADL
 
     def setUp(self):
-        # Method: __init__
+        # Method: setUp
         # Purpose: Initialize class, which in this case also means instantiate the flow
         super().setUp()
         self.google_flows = GoogleFlows()
@@ -27,5 +28,7 @@ class TestGoogleSearchSWADLUnitTests(engine.swadl_test.SWADLTest):
         #          - page.open() works
         #          - page.validate_loaded() works
         #          - control.validate() works
-        self.google_flows.search("Chromedriver")
-        self.google_flows.validate_in_results("ChromeDriver - WebDriver for Chrome")
+        self.test_data[SEARCH_KEY] = "Chromedriver"
+        self.test_data[SEARCH_RESULT] = "ChromeDriver - WebDriver for Chrome"
+        self.google_flows.search(self.test_data)
+        self.google_flows.validate_in_results(self.test_data)
