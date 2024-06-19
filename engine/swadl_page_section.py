@@ -76,7 +76,7 @@ class SWADLPageSection(SWADLBase):
         # TODO: 20200930AMM: JSONWireProtocol direct support please, with retry
         self.driver.get(url)
 
-    def load_page(self):
+    def load_page(self, test_data=None):
         # Method: load_page
         # Purpose: Load the specified page and validate that it was loaded.
         if not self.validate_loaded(fatal=False, report=False, timeout=0.5):
@@ -87,6 +87,7 @@ class SWADLPageSection(SWADLBase):
                 f"{self.url}"
             )
         self.validate_loaded()
+
 
     def validate_controls(self, controls=None, validation=None, **kwargs):
         # Method: validate_controls

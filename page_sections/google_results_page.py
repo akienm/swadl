@@ -5,7 +5,7 @@ import logging
 
 from engine.swadl_constants import VALIDATE_VISIBLE
 from engine.swadl_control import SWADLControl
-from engine.swadl_pagesection import SWADLPageSection
+from engine.swadl_page_section import SWADLPageSection
 from flows.google_search_constants import SEARCH_RESULT
 
 logger = logging.getLogger(__name__)
@@ -55,5 +55,10 @@ class GoogleResultSection(SWADLPageSection):
         # Inputs: - (str)string_to_test - item to search for
         # Returns: - True if found
         # Notes: Google specific!
+        old_has_text = None
+        if self.any_result_header.has_text:
+            old_has_text = self.any_result_header.has_text
         self.any_result_header.has_text = test_data[SEARCH_RESULT]
-        return self.any_result_header.validate_exist()
+        result = self.any_result_header.validate_exist()
+        self.any_result_header.has_text = old_has_text
+        return result

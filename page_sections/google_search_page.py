@@ -5,7 +5,7 @@ import logging
 
 from engine.swadl_constants import VALIDATE_VISIBLE
 from engine.swadl_control import SWADLControl
-from engine.swadl_pagesection import SWADLPageSection
+from engine.swadl_page_section import SWADLPageSection
 from flows.google_search_constants import SEARCH_KEY
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,6 @@ class GoogleSearchPage(SWADLPageSection):
     def do_search(self, test_data=None):
         # Method: do_search
         # Purpose: loads page if it's not loaded
-        self.load_page()
+        self.load_page(test_data)
         self.search_box.send_keys(value=test_data[SEARCH_KEY])
-        self.search_box.submit()
+        self.search_box.submit()  # TODO: AMM Asks if we need to make this take test_data as well...
