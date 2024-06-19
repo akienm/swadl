@@ -11,7 +11,7 @@ from selenium.webdriver.common.by import By
 from engine.swadl_base import SWADLBase
 from engine.swadl_constants import CACHE
 from engine.swadl_constants import CLICK
-from engine.swadl_constants import cfgdict
+from engine.swadl_cfg import cfgdict
 from engine.swadl_constants import ENABLED
 from engine.swadl_constants import EXIST
 from engine.swadl_constants import FAILURE_LOG

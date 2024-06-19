@@ -5,8 +5,8 @@ import gc
 import inspect
 import time
 
-from engine.swadl_constants import cfgdict
-from engine.swadl_constants import driver
+from engine.swadl_cfg import cfgdict
+from engine.swadl_constants import DRIVER
 from engine.swadl_constants import SUBSTITUTION_SOURCES
 from engine.swadl_constants import TEST_NAME
 from engine.swadl_constants import TIMEOUT
@@ -41,7 +41,7 @@ class SWADLBase(object):
 
         # these are to make this fuctionality avilable to every object using it
         self.cfgdict = cfgdict
-        self.driver = driver
+        self.driver = self.cfgdict[DRIVER]
 
     def apply_kwargs(self, kwargs):
         # Method: apply_kwargs

@@ -3,7 +3,7 @@
 # Purpose: Akien's first unit tests for SWADL
 import logging
 
-from demos.google_search_flow import GoogleFlows
+from flows.google_search_flow import GoogleFlows
 import engine.swadl_test
 
 

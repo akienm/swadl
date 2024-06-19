@@ -5,7 +5,7 @@ from pprint import pformat
 import unittest
 
 from engine.swadl_base import SWADLBase
-from engine.swadl_constants import cfgdict
+from engine.swadl_cfg import cfgdict
 from engine.swadl_constants import FAILURE_LOG
 from engine.swadl_constants import RESULT_LOG
 from engine.swadl_constants import TEST_NAME

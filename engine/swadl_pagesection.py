@@ -3,7 +3,7 @@
 
 import logging
 
-from engine.swadl_constants import cfgdict
+from engine.swadl_cfg import cfgdict
 from engine.swadl_constants import NAME
 from engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
 from engine.swadl_constants import VALIDATE_VISIBLE
