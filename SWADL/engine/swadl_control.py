@@ -230,6 +230,7 @@ class SWADLControl(SWADLBase):
                 # TODO: Use prefixes instead, such as css= or xpath=. Add that logic here.
                 raw_element_list = self.driver.find_elements(By.CSS_SELECTOR, processed_selector)
                 processed_list = []
+
                 if self.is_text:
                     for element in raw_element_list:
                         if self.is_text == element.text:
@@ -240,13 +241,12 @@ class SWADLControl(SWADLBase):
                             processed_list.append(element)
                 else:
                     processed_list = raw_element_list
-                if self.index:
-                    if self.index:
-                        assert len(processed_list) > self.index, (
-                            f"Index of {self.index} into the list of matching controls is "
-                            f"invalid, the number of elements was {len(processed_list)}."
-                        )
-                        processed_list = [processed_list[self.index]]
+                if self.index is not None:
+                    assert len(processed_list) > self.index, (
+                        f"Index of {self.index} into the list of matching controls is "
+                        f"invalid, the number of elements was {len(processed_list)}."
+                    )
+                    processed_list = [processed_list[self.index]]
                 if processed_list:
                     break
             except Exception:

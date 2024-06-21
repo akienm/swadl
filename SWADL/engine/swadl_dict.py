@@ -5,6 +5,9 @@ class SWADLDict(OrderedDict):
     def __init__(self, **kwargs):
         self.update(kwargs)
 
+    def set(self, key, value):
+        self[key] = value
+
     def dump(self):
         max_width = 0
         for key in self.keys():

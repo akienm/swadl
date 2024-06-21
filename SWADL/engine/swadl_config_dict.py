@@ -4,22 +4,25 @@ Purpose: Master global configuration dictionary
 """
 
 import logging
+from SWADL.engine.swadl_dict import SWADLDict
 
 logger = logging.getLogger(__name__)
 
 
-class ConfigDict(object):
+class ConfigDict(SWADLDict):
     """
     Class: SingletonDict
     Purpose: To provide a singleton for configuration information.
     """
-    _instance = {}
+    _instance = None
 
     def __new__(cls, *args, **kwargs):
         """
         Method: __new__
         Purpose: Replaces dunder method that returns the instance
         """
+        if cls._instance is None:
+            cls._instance = SWADLDict()
         cls._instance.update(**kwargs)
         return cls._instance
 
