@@ -1,45 +1,66 @@
 # SWADL: Selenium Webdriver Accelerated Development Library
 Akien Maciain akienm@gmail.com
 
-## Purpose:
-Implements a best practices based reusable selenium framework suitable for process automation. This includes test automation, business process automation, and any similar. 
+## Purpose of this library
+Implements a best practices based reusable Test Automation framework suitable for 
+process automation. This includes test automation, business process automation, 
+and any similar.
+
+While this is currently implemented only to talk to selenium, one TODO item is to make
+the selenium interface component a layer, and add libraries for pywinauto and other 
+low level interfaces/
 
 This is intended to be both reusable code to launch from, and to be an illustration of test automation framework design best practices.
 
-## Installation
-This discussion assumes a Windows 10 compatible machine. The paths will be different on other
-platforms, but should be substantially the same.
+## Installation for Automation Developers
+1) Fetch the repo: git clone https://github.com/akienm/swadl.git
+2) Set the environment variable SWADL_HOME to point to the repo's local
+   directory.
+3) Add %SWADL_HOME%\bin to your path
+4) Install the repo: pip install -e %SWADL_HOME%
 
-You will need:
-    * winget install --id=Oracle.JDK.18  -e 
-    * Download the Selenium JAR file. https://www.selenium.dev/downloads/
-      and put it on your path
+## Status of the code as of this writing
+Originally developed as a proof of concept. Not all functions yet fully implemented and
+debugged as of this writing. See TODO.md for more information.
 
-## Status:
-As of this writing, this is a work in progress. See TODO.md for more information
-
-## Organization:
-* `seleniumpoc/bin`: various whatnot I use to develop this
-* `seleniumpoc/demos`: The demos. As of now, there's one
-* `seleniumpoc/engine`: The SWADL Framework
-* `seleniumpoc/README.md`: This file
-* `seleniumpoc/TODO.md`: An overview of some of the major points of this framework still to implement
-* `seleniumpoc/ToO.md`: Theory of operation
+## Organization of the code
+* `swadl/bin`: various whatnot I use to develop this
+* `swadl/demos`: The demos. As of now, there's one
+* `swadl/engine`: The SWADL Framework
+* `swadl/README.md`: This file
+* `swadl/TODO.md`: An overview of some of the major points of this framework still to implement
+* `swadl/ToO.md`: Theory of operation (planned)
 
 ## Overview of Major Architectural Goals:
-1) This code implements a set of interfaces intended to replace the Selenium interfaces, and to handle all the synchronization for you.
-3) Implement flows (also sometimes called storyboards), and strict encapsulation between tests, flows, and pages.
-4) Demonstrate "engine-based-testing", where an engine can validate all the controls on a given page.
-5) Portray code that can gather all the errors, not just stop at the first one.
+1) This code implements a set of interfaces intended to replace the 
+   Selenium interfaces, and to handle all the synchronization for you.
+3) Implement flows (also sometimes called storyboards), and strict 
+   encapsulation between tests, flows, and pages.
+4) Demonstrate "engine-based-testing", where an engine can validate 
+   all the controls on a given page.
+5) Portray code that can gather all the errors, not just stop at the 
+   first one.
 
 ## Platform:
-All the examples and support code was developed on Windows. Almost all the python code, including the SWADL components, is platform independent. 
-
-The one known exception is the driver creation code in SWADL_constants.py. You will need to add code there to support additional platforms as needed.
+All the examples and support code was developed on Windows. Almost all the 
+python code, including the SWADL components, is platform independent. 
 
 The demo tests run on either nose2 or pytest.
 
+The demo code can be run once the setup is complete by typing either:
+googledemo
+or 
+googledemo p
+
+The first one runs under nose2 (because I like the output better) and
+the second one runs under pytest.
+
 ## Terminology:
+NOTE: This use of assertion comes from application development. Where
+assert is used to indicate "we can continue". 
+TODO: Change the languaging of this to reflect how we use assertions
+with other test automation frameworks.
+
 - Assertion - Assertions are condition tests which prove that the test can continue or not. Failed assertions are almost always "Errors".
 - Error - This means the test experienced an error and was unable to complete. This is not the same as a "failure".
 - Failure - This means that the thing the test was actually testing didn't meet expectations. This may mean something as small as a control which was the wrong color, it's noted and the test continues. Validations can usually be marked with the keyword `fatal`. If the call has `fatal=True`, that means if it fails, raise an exception.
