@@ -2,17 +2,12 @@
 # Purpose: Constants
 
 # standard libraries
-import os
 import sys
 
 # selenium imports
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.edge.options import Options as EdgeOptions
-from selenium import webdriver
 
 
 # SWADL libs
-from engine.swadl_config_dict import ConfigDict
 
 # Section: Don't clutter up the workspace. Adding this here makes PYTHONDONTWRITEBYTECODE
 # less important.

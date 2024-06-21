@@ -8,28 +8,28 @@ import time
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 
-from engine.swadl_base import SWADLBase
-from engine.swadl_constants import CACHE
-from engine.swadl_constants import CLICK
-from engine.swadl_cfg import cfgdict
-from engine.swadl_constants import ENABLED
-from engine.swadl_constants import EXIST
-from engine.swadl_constants import FAILURE_LOG
-from engine.swadl_constants import RESULT_LOG
-from engine.swadl_constants import SELENIUM_CONTROL_DEFAULT_TIMEOUT
-from engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
-from engine.swadl_constants import UNIQUE
-from engine.swadl_constants import VALIDATE_CLICK
-from engine.swadl_constants import VALIDATE_ENABLED
-from engine.swadl_constants import VALIDATE_EXIST
-from engine.swadl_constants import VALIDATE_INPUT
-from engine.swadl_constants import VALIDATE_TEXT
-from engine.swadl_constants import VALIDATE_UNIQUE
-from engine.swadl_constants import VALIDATE_VISIBLE
-from engine.swadl_constants import VALUE
-from engine.swadl_constants import VISIBLE
-from engine.swadl_helpers import get_timestamp
-from engine.swadl_output import Output
+from SWADL.engine.swadl_base import SWADLBase
+from SWADL.engine.swadl_constants import CACHE
+from SWADL.engine.swadl_constants import CLICK
+from SWADL.engine.swadl_cfg import cfgdict
+from SWADL.engine.swadl_constants import ENABLED
+from SWADL.engine.swadl_constants import EXIST
+from SWADL.engine.swadl_constants import FAILURE_LOG
+from SWADL.engine.swadl_constants import RESULT_LOG
+from SWADL.engine.swadl_constants import SELENIUM_CONTROL_DEFAULT_TIMEOUT
+from SWADL.engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
+from SWADL.engine.swadl_constants import UNIQUE
+from SWADL.engine.swadl_constants import VALIDATE_CLICK
+from SWADL.engine.swadl_constants import VALIDATE_ENABLED
+from SWADL.engine.swadl_constants import VALIDATE_EXIST
+from SWADL.engine.swadl_constants import VALIDATE_INPUT
+from SWADL.engine.swadl_constants import VALIDATE_TEXT
+from SWADL.engine.swadl_constants import VALIDATE_UNIQUE
+from SWADL.engine.swadl_constants import VALIDATE_VISIBLE
+from SWADL.engine.swadl_constants import VALUE
+from SWADL.engine.swadl_constants import VISIBLE
+from SWADL.engine.swadl_utils import get_timestamp
+from SWADL.engine.swadl_output import Output
 
 logger = logging.getLogger(__name__)
 
@@ -222,7 +222,7 @@ class SWADLControl(SWADLBase):
         """
         self.apply_kwargs(kwargs)
         end_time = end_time if end_time else time.time() + timeout
-        processed_selector = self.selector  # TODO: Add resolve substitutions here
+        processed_selector = self.resolve_substitutions(self.selector)
         processed_list = []
         while True:
             try:
@@ -286,6 +286,17 @@ class SWADLControl(SWADLBase):
             timeout=timeout
         )
         return self._get_enabled(end_time=end_time, expected=expected, timeout=timeout, **kwargs)[0]
+
+    def get_value(self, end_time=None, expected=True,
+                    timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
+        # Method: get_value
+        # Purpose: Returns value (text) of the control
+        end_time, element_list = self._check_actionable(
+            end_time=end_time,
+            kwargs=kwargs,
+            timeout=timeout
+        )
+        return self._get_value(end_time=end_time, expected=expected, timeout=timeout, **kwargs)[0]
 
     def get_visible(self, end_time=None, expected=True,
                     timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):

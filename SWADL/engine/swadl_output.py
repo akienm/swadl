@@ -3,7 +3,7 @@
 
 import os
 
-from engine.swadl_helpers import get_timestamp
+from SWADL.engine.swadl_utils import get_timestamp
 
 
 class Output():

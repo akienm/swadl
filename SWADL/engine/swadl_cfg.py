@@ -5,8 +5,8 @@ import os
 from selenium import webdriver
 
 # SWADL libs
-from engine.swadl_config_dict import ConfigDict
-from engine.swadl_constants import SELENIUM_BROWSER_OPTIONS, SELENIUM_BROWSER_PLATFORM, SELENIUM_BROWSER_VERSION, \
+from SWADL.engine.swadl_config_dict import ConfigDict
+from SWADL.engine.swadl_constants import SELENIUM_BROWSER_OPTIONS, SELENIUM_BROWSER_PLATFORM, SELENIUM_BROWSER_VERSION, \
     SELENIUM_BROWSER, SELENIUM_CONTROL_DEFAULT_TIMEOUT, SELENIUM_PAGE_DEFAULT_TIMEOUT, SELENIUM_TEST_SET_FILE, \
     SWADLTEST_URL, SWADLTEST_VERBOSE, DRIVER
 

@@ -3,19 +3,18 @@
 
 import logging
 
-from engine.swadl_constants import VALIDATE_VISIBLE
-from engine.swadl_control import SWADLControl
-from engine.swadl_page_section import SWADLPageSection
-from flows.google_search_constants import SEARCH_RESULT
+from SWADL.engine.swadl_constants import VALIDATE_VISIBLE
+from SWADL.engine.swadl_control import SWADLControl
+from SWADL.engine.swadl_base_section import SWADLPageSection
+from Project.flows.google_search_constants import SEARCH_RESULT_TITLES
 
 logger = logging.getLogger(__name__)
 
 
 class GoogleResultSection(SWADLPageSection):
-    # Class: GoogleResultSection
     # Purpose: Google search page, for framework unit tests
+
     def __init__(self, **kwargs):
-        # Method: __init__
         # Purpose: Unit test fixture.
         super().__init__(**kwargs)
         self.url = "https://www.google.com"
@@ -49,16 +48,17 @@ class GoogleResultSection(SWADLPageSection):
             validation=VALIDATE_VISIBLE,
         )
 
-    def validate_google_search_result(self, test_data=None):
-        # Method: validate_google_search_result
-        # Purpose: Validates whether or not a header which contains the specified string exists
+    def get_matching_results(self, test_data=None):
+        # Purpose: Returns matching test results if any
         # Inputs: - (str)string_to_test - item to search for
-        # Returns: - True if found
         # Notes: Google specific!
-        old_has_text = None
-        if self.any_result_header.has_text:
-            old_has_text = self.any_result_header.has_text
-        self.any_result_header.has_text = test_data[SEARCH_RESULT]
-        result = self.any_result_header.validate_exist()
-        self.any_result_header.has_text = old_has_text
-        return result
+        # WARNING: DESTROYS CONTENTS OF self.index!!!
+
+        raw_results = self.any_result_header.get_elements()
+        raw_count = len(raw_results)
+        result_list = []
+
+        for index in range(0, raw_count):
+            self.any_result_header.index = index
+            result_list.append(self.any_result_header.get_value())
+        test_data[SEARCH_RESULT_TITLES] = result_list

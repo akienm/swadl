@@ -6,7 +6,7 @@ goto done
 
 :keep_going
 cd %SWADL_HOME%
-cd demos
+cd Project\demos
 if %1.==p. (
     pytestrunner google_unit_tests.py
 ) else (

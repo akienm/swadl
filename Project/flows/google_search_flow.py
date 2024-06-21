@@ -1,11 +1,11 @@
 # File: google_search_flow
 # Purpose: Unit test and demo
-from flows.google_search_constants import SEARCH_KEY, SEARCH_RESULT
-from page_sections.google_results_page import GoogleResultSection
-from page_sections.google_search_page import GoogleSearchPage
+from SWADL.engine.swadl_base_flow import SWADLBaseFlow
+from Project.page_sections.google_results_page import GoogleResultSection
+from Project.page_sections.google_search_page import GoogleSearchPage
 
 
-class GoogleFlows():
+class GoogleFlows(SWADLBaseFlow):
     # Class: GoogleFlows
     # Purpose: Encapsulates flows for Google used in unit tests
 
@@ -20,7 +20,7 @@ class GoogleFlows():
         # Purpose: Perform google search
         self.google_search_page.do_search(test_data)
 
-    def validate_in_results(self, test_data=None):
+    def get_matching_results(self, test_data=None):
         # Method: validate_in_results
         # Purpose: Validate that the search_key provided is in the result headers somewhere
-        self.google_results_page.validate_google_search_result(test_data)
+        self.google_results_page.get_matching_results(test_data)

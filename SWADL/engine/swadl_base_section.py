@@ -3,17 +3,16 @@
 
 import logging
 
-from engine.swadl_cfg import cfgdict
-from engine.swadl_constants import NAME
-from engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
-from engine.swadl_constants import VALIDATE_VISIBLE
-from engine.swadl_base import SWADLBase
+from SWADL.engine.swadl_cfg import cfgdict
+from SWADL.engine.swadl_constants import NAME
+from SWADL.engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
+from SWADL.engine.swadl_constants import VALIDATE_VISIBLE
+from SWADL.engine.swadl_base import SWADLBase
 
 logger = logging.getLogger(__name__)
 
 
 class SWADLPageSection(SWADLBase):
-    # Class: SWADLPage
     # Purpose: Represents a portion of a page
     # Usage:
     #       class HomePageHeader(SWADLPageSection):
@@ -52,19 +51,16 @@ class SWADLPageSection(SWADLBase):
     #               home_page_header.do_login()
     #               user_home_page.validate_loaded()
 
-    # Datum: url
+    url = None
     # Purpose: In the instance, may contain the url for this page section.
     # Users: open()
-    url = None
 
     def __init__(self, *args, name=None, **kwargs):
-        # Method: __init__
         # Purpose: Set the name based on the class
         kwargs[NAME] = name if name else self.__class__.__name__
         super().__init__(*args, **kwargs)
 
     def open(self, url=None, timeout=cfgdict[SELENIUM_PAGE_DEFAULT_TIMEOUT]):
-        # Method: open
         # Purpose: Open a page
         # Inputs: - (str)url - url to open, if None, looks for self.url
         #         - (float)timeout - seconds to wait before throwing an error
@@ -73,11 +69,9 @@ class SWADLPageSection(SWADLBase):
         #        becomes an issue.
         url = url or self.url
         assert url, "Unable to Section.open() with the url of 'None'."
-        # TODO: 20200930AMM: JSONWireProtocol direct support please, with retry
         self.driver.get(url)
 
     def load_page(self, test_data=None):
-        # Method: load_page
         # Purpose: Load the specified page and validate that it was loaded.
         if not self.validate_loaded(fatal=False, report=False, timeout=0.5):
             self.open()
@@ -90,7 +84,6 @@ class SWADLPageSection(SWADLBase):
 
 
     def validate_controls(self, controls=None, validation=None, **kwargs):
-        # Method: validate_controls
         # Purpose: Validates a collection of controls.
         # Inputs: - controls - A collection of either:
         #             - SWADLControl objects
@@ -147,15 +140,13 @@ class SWADLPageSection(SWADLBase):
             result = result and new_result
         return result
 
-    # Datum: validate_loaded_queue
+    validate_loaded_queue = None
     # Purpose: (list/tuple) Used to contain references to the list of controls that will prove the
     #          Section is loaded. None gets overridden in the instance with a list of controls for
     #          that Section.
     # Users: validate_loaded()
-    validate_loaded_queue = None
 
     def validate_loaded(self, controls=None, fatal=True, timeout=None, **kwargs):
-        # Method: validate_loaded
         # Purpose: Vaildates that all the specified controls are visible
         # Inputs: (collection)controls - controls to verify. If not specified, tries to use
         #                                self.validate_loaded_queue
