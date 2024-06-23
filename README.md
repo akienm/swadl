@@ -62,25 +62,44 @@ assert is used to indicate "we can continue".
 TODO: Change the languaging of this to reflect how we use assertions
 with other test automation frameworks.
 
-- Assertion - Assertions are condition tests which prove that the test can continue or not. Failed assertions are almost always "Errors".
+- Assertion - Assertions are condition tests which prove that the test can 
+continue or not. Failed assertions are almost always "Errors".
 - Error - This means the test experienced an error and was unable to complete. This is not the same as a "failure".
 - Failure - This means that the thing the test was actually testing didn't meet expectations. This may mean something as small as a control which was the wrong color, it's noted and the test continues. Validations can usually be marked with the keyword `fatal`. If the call has `fatal=True`, that means if it fails, raise an exception.
 - Validate - this means to perform a test that, if it fails, means a test failure. Sometimes Validations with fatal=True are ALSO errors.
 
 ## Setup
-For use in developing automation, just pip install swadl (TODO)
+For use in developing the framework, just pip install swadl (TODO)
 
 For development on the framework, you will need:
 * a SWADL_HOME environment variable, which is the root of the SWADL system.
 * Typical directory layout:
 ```
-%SWADL_HOME%
-├───bin
-│       selenium-server-standalone.jar
-└───swadl
-    ├───bin
-    ├───demos
-    └───engine
+[%SWADL_HOME%]
+├───[bin]
+│   ├───googledemo.bat 
+│   ├───nose2runner.bat
+│   ├───pytestrunner.bat
+│   └───runatest.bat
+├───[project]
+│   ├───[demos]
+│   │   └───google_unit_tests.py
+│   ├───[flows]
+│   │   ├───google_search_constants.py
+│   │   └───google_search_flow.py
+│   ├───[page_sections]
+│   │   ├───google_results_page.py
+│   │   └───google_search_page.py
+├───[swadl]
+│   ├───[engine]
+│   ├───helpers
+│   └───engine
+├───ENGINE.MD
+├───README.nd
+├───requirements.txt
+├───setup.py
+└───TODO.md
+
 ```
 * Add `%SWADL_HOME%\bin` to your path
 * Download Selenium from https://www.selenium.dev/downloads/ - put it in `%SWADL_USERHOME%\bin`, and rename it from something like selenium-server-standalone-3.141.59.jar to selenium-server-standalone.jar
