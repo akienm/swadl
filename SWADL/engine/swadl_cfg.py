@@ -1,7 +1,6 @@
 
 # standard libraries
 import os
-
 from selenium import webdriver
 
 # SWADL libs
@@ -9,6 +8,8 @@ from SWADL.engine.swadl_config_dict import ConfigDict
 from SWADL.engine.swadl_constants import SELENIUM_BROWSER_OPTIONS, SELENIUM_BROWSER_PLATFORM, SELENIUM_BROWSER_VERSION, \
     SELENIUM_BROWSER, SELENIUM_CONTROL_DEFAULT_TIMEOUT, SELENIUM_PAGE_DEFAULT_TIMEOUT, SELENIUM_TEST_SET_FILE, \
     SWADLTEST_URL, SWADLTEST_VERBOSE, DRIVER
+from SWADL.engine.swadl_constants import TEST_DATA
+from SWADL.engine.swadl_dict import SWADLDict
 
 # Section: cfgdict
 # Purpose: Global configuration storge importable instance. All test values to be read from the
@@ -33,6 +34,11 @@ TEST_PARAMETERS = {
 
 for key in TEST_PARAMETERS:
     cfgdict[key] = os.environ.get(key, TEST_PARAMETERS[key])
+
+# Section: test_data
+# Purpose: creates the vehicle by which all other parts communicate
+cfgdict[TEST_DATA] = SWADLDict()
+
 
 # Section: test_set
 # Purpose: Read from a .test_set file if one is specified. Overrides values in cfgdict

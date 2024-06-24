@@ -30,8 +30,8 @@ class TestGoogleSearchSWADLUnitTests(SWADL.engine.swadl_base_test.SWADLTest):
         self.test_data[SEARCH_KEY] = "Chromedriver"
         self.test_data[SEARCH_RESULT_STRING] = "ChromeDriver overview - Chrome for Developers"
 
-        self.google_flows.search(self.test_data)
-        self.google_flows.get_matching_results(self.test_data)
+        self.google_flows.search()
+        self.google_flows.get_matching_results()
 
         assert len(self.test_data[SEARCH_RESULT_TITLES]) > 0, (
             "The expected search result was not found. Expected to find "

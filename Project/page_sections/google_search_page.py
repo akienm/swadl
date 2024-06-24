@@ -29,9 +29,10 @@ class GoogleSearchPage(SWADLPageSection):
 
         self.validate_loaded_queue = [self.search_box]
 
-    def do_search(self, test_data=None):
+    def do_search(self):
         # Purpose: loads page if it's not loaded
-        self.load_page(test_data)
+        # Inputs: SEARCH_KEY
+        self.load_page()
         # This
-        self.search_box.send_keys(value=test_data[SEARCH_KEY])
-        self.search_box.submit()  # TODO: AMM Asks if we need to make this take test_data as well...
+        self.search_box.send_keys(value=self.test_data[SEARCH_KEY])
+        self.search_box.submit()

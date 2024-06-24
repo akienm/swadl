@@ -6,7 +6,7 @@ import inspect
 import time
 
 from SWADL.engine.swadl_cfg import cfgdict
-from SWADL.engine.swadl_constants import DRIVER
+from SWADL.engine.swadl_constants import DRIVER, TEST_DATA
 from SWADL.engine.swadl_constants import SUBSTITUTION_SOURCES
 from SWADL.engine.swadl_constants import TEST_NAME
 from SWADL.engine.swadl_constants import TIMEOUT
@@ -76,6 +76,11 @@ class SWADLBase(object):
             parent_name = ""
 
         return f"{test_name}{parent_name}{self.name}"
+
+    @property
+    def test_data(self):
+        # Purpose: To make the test_data vehicle available on all SWADL objects
+        return cfgdict[TEST_DATA]
 
     class _SafeDict(dict):
         # Purpose: Fills in f-string style braced arguments from keys in the

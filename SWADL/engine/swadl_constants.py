@@ -27,6 +27,7 @@ NAME = "name"
 RESULT_LOG = "result_log"
 SELECTED_CAPS = "SELECTED_CAPS"
 SUBSTITUTION_SOURCES = "substitution_sources"
+TEST_DATA = 'TEST_DATA'
 TEST_NAME = 'test_name'
 TEST_SET_FILE = "test_set_file"
 TEST_OBJECT = 'TEST_OBJECT'

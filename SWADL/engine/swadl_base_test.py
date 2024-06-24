@@ -6,7 +6,7 @@ import unittest
 
 from SWADL.engine.swadl_base import SWADLBase
 from SWADL.engine.swadl_cfg import cfgdict
-from SWADL.engine.swadl_constants import FAILURE_LOG, TEST_OBJECT
+from SWADL.engine.swadl_constants import FAILURE_LOG, TEST_OBJECT, TEST_DATA
 from SWADL.engine.swadl_constants import RESULT_LOG
 from SWADL.engine.swadl_constants import TEST_NAME
 from SWADL.engine.swadl_control import accumulated_failures
@@ -30,13 +30,12 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         cfgdict[TEST_NAME] = self.name  # and this makes the test name available everywhere
 
         # Now init the swadl part
-        #super().__init__()
         SWADLBase.__init__(self, *args, **kwargs)
 
         # Things that swadl needs tests to have
         self.parent = None  # because tests don't need one
-        self.test_data = SWADLDict()
         self.test_data[TEST_OBJECT] = self
+
 
         # and now, if all of that passed, let's initialize the csv output
         # TODO: Move this to a new module that will handle reporting
@@ -63,4 +62,4 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         cfgdict[FAILURE_LOG].close(f"for {self.get_name()}")
         cfgdict[RESULT_LOG].close(f"for {self.get_name()}")
         super().tearDown()
-        assert not accumulated_failures, pformat(accumulated_failures)
+        assert not self.accumulated_failures, pformat(accumulated_failures)

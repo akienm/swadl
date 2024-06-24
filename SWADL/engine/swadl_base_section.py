@@ -55,33 +55,24 @@ class SWADLPageSection(SWADLBase):
     # Purpose: In the instance, may contain the url for this page section.
     # Users: open()
 
-    def __init__(self, *args, name=None, **kwargs):
+    def __init__(self, *args, test_data=None, name=None, **kwargs):
         # Purpose: Set the name based on the class
         kwargs[NAME] = name if name else self.__class__.__name__
         super().__init__(*args, **kwargs)
 
-    def open(self, url=None, timeout=cfgdict[SELENIUM_PAGE_DEFAULT_TIMEOUT]):
-        # Purpose: Open a page
-        # Inputs: - (str)url - url to open, if None, looks for self.url
-        #         - (float)timeout - seconds to wait before throwing an error
-        # Notes: IMPORTANT! Experience shows some Chrome behavior of stalling on page loads with
-        #        `data;` in the address box. 20200930AMM: We may need a link based loader if this
-        #        becomes an issue.
-        url = url or self.url
-        assert url, "Unable to Section.open() with the url of 'None'."
-        self.driver.get(url)
-
-    def load_page(self, test_data=None):
+    def load_page(self, url=None, timeout=cfgdict[SELENIUM_PAGE_DEFAULT_TIMEOUT]):
         # Purpose: Load the specified page and validate that it was loaded.
         if not self.validate_loaded(fatal=False, report=False, timeout=0.5):
-            self.open()
+            url = url or self.url
+            assert url, "Unable to Section.open() with the url of 'None'."
+            self.driver.get(url)
         else:
             logger.debug(
                 f"SWADL.{self.get_name()}.load_page() asked to load page already loaded for "
                 f"{self.url}"
             )
-        self.validate_loaded()
 
+        self.validate_loaded()
 
     def validate_controls(self, controls=None, validation=None, **kwargs):
         # Purpose: Validates a collection of controls.
@@ -164,4 +155,5 @@ class SWADLPageSection(SWADLBase):
             validation={VALIDATE_VISIBLE: True},
             **kwargs,
         )
+        self.test_data[f'{self.name} loaded ok'] = result
         return result
