@@ -4,6 +4,7 @@
 import logging
 
 from SWADL.engine.swadl_constants import VALIDATE_VISIBLE
+from Project.flows.google_search_constants import SEARCH_RESULT_STRING
 from SWADL.engine.swadl_control import SWADLControl
 from SWADL.engine.swadl_base_section import SWADLPageSection
 from Project.flows.google_search_constants import SEARCH_RESULT_TITLES
@@ -44,7 +45,7 @@ class GoogleResultSection(SWADLPageSection):
         self.any_result_header = SWADLControl(
             name="any_result",
             parent=self,
-            selector='h3[class="LC20lb DKV0Md"]',
+            selector='h3[class="LC20lb MBeuO DKV0Md"]',  #.DKV0Md
             validation=VALIDATE_VISIBLE,
         )
 
@@ -54,9 +55,15 @@ class GoogleResultSection(SWADLPageSection):
         # Notes: Google specific!
         # WARNING: DESTROYS CONTENTS OF self.index!!!
 
+        self.any_result_header.has_text = test_data[SEARCH_RESULT_STRING]
         raw_results = self.any_result_header.get_elements()
         raw_count = len(raw_results)
         result_list = []
+        if raw_count == 1:
+            results_list=[]
+
+        self.any_result_header.index = 0
+        self.any_result_header.get_elements(timeout=1)
 
         for index in range(0, raw_count):
             self.any_result_header.index = index
