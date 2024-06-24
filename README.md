@@ -15,7 +15,8 @@ This is intended to be both reusable code to launch from, and to be an illustrat
 ## Installation for Automation Developers
 1) Fetch the repo: git clone https://github.com/akienm/swadl.git
 2) Set the environment variable SWADL_HOME to point to the repo's local
-   directory.
+   directory. You can use SystemPropertiesAdvanced.exe to set an environment 
+   variable.
 3) Add %SWADL_HOME%\bin to your path
 4) Install the repo: pip install -e %SWADL_HOME%
 
