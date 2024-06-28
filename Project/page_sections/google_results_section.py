@@ -1,4 +1,4 @@
-# File: google_results_page.py
+# File: google_results_section.py
 # Purpose: To validate the SWADL (Test Automation Framework)
 
 import logging
@@ -20,26 +20,16 @@ class GoogleResultSection(SWADLPageSection):
         super().__init__(**kwargs)
         self.url = "https://www.google.com"
 
-        # for page load testing
         self.google_icon = SWADLControl(
             name="google_icon",
             parent=self,
             selector='img[alt="Google"]',
             validation=VALIDATE_VISIBLE,
         )
-        self.terms_link = SWADLControl(
-            name="terms_link",
-            parent=self,
-            selector='[href*="policies"][href*="terms"]',
-            validation=VALIDATE_VISIBLE,
-        )
-        self.validate_loaded_queue = (self.google_icon, self.terms_link)
-
-        # other controls
         self.search_box = SWADLControl(
             name="search_box",
             parent=self,
-            selector='[title="Search"]',
+            selector='#APjFqb',
             validation=VALIDATE_VISIBLE,
         )
         self.any_result_header = SWADLControl(
@@ -48,6 +38,7 @@ class GoogleResultSection(SWADLPageSection):
             selector='h3[class="LC20lb MBeuO DKV0Md"]',  #.DKV0Md
             validation=VALIDATE_VISIBLE,
         )
+        self.validate_loaded_queue = (self.google_icon, self.search_box)
 
     def get_matching_results(self):
         # Purpose: Returns matching test results if any
@@ -63,6 +54,11 @@ class GoogleResultSection(SWADLPageSection):
         self.test_data[raw_elements] = self.any_result_header.get_elements()
         raw_count = len(self.test_data[raw_elements])
         self.test_data[SEARCH_RESULT_TITLES_LIST] = []
+
         for index in range(0, raw_count):
             self.any_result_header.index = index
-            self.test_data[SEARCH_RESULT_TITLES_LIST](self.any_result_header.get_value())
+            import pdb ; pdb.set_trace()
+            print(f'raw elements={self.any_result_header.get_elements()}')
+            found_value = self.any_result_header.get_value()
+            print(f'found value={found_value}')
+            self.test_data[SEARCH_RESULT_TITLES_LIST].append(found_value)

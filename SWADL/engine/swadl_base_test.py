@@ -12,10 +12,13 @@ from SWADL.engine.swadl_constants import TEST_NAME
 from SWADL.engine.swadl_control import accumulated_failures
 from SWADL.engine.swadl_dict import SWADLDict
 from SWADL.engine.swadl_output import Output
+from SWADL.engine.swadl_utils import bannerize
 
 
 class SWADLTest(unittest.TestCase, SWADLBase):
     # Purpose: to raise an assertion on exit if there have been failures
+
+    accumulated_failures = None
 
     def __init__(self, *args, **kwargs):
 
@@ -62,4 +65,8 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         cfgdict[FAILURE_LOG].close(f"for {self.get_name()}")
         cfgdict[RESULT_LOG].close(f"for {self.get_name()}")
         super().tearDown()
+        print("")
+        print(bannerize(data=self.test_data, title="test_data"))
+        # import pdb ; pdb.set_trace()
+        print(bannerize(data=self.__dict__, title='test object'))
         assert not self.accumulated_failures, pformat(accumulated_failures)

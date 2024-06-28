@@ -1,8 +1,8 @@
 # File: google_search_flow
 # Purpose: Unit test and demo
 from SWADL.engine.swadl_base_flow import SWADLBaseFlow
-from Project.page_sections.google_results_page import GoogleResultSection
-from Project.page_sections.google_search_page import GoogleSearchPage
+from Project.page_sections.google_results_section import GoogleResultSection
+from Project.page_sections.google_search_section import GoogleSearchPage
 
 
 class GoogleFlows(SWADLBaseFlow):

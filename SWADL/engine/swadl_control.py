@@ -28,7 +28,8 @@ from SWADL.engine.swadl_constants import VALIDATE_UNIQUE
 from SWADL.engine.swadl_constants import VALIDATE_VISIBLE
 from SWADL.engine.swadl_constants import VALUE
 from SWADL.engine.swadl_constants import VISIBLE
-from SWADL.engine.swadl_utils import get_timestamp
+from SWADL.engine.swadl_dict import SWADLDict
+from SWADL.engine.swadl_utils import get_timestamp, bannerize
 from SWADL.engine.swadl_output import Output
 
 logger = logging.getLogger(__name__)
@@ -504,10 +505,12 @@ class SWADLControl(SWADLBase):
                    timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
         # Method: get_value
         # Purpose: Returns the result of testing the VALIDATE_TEXT of the control
+
         result, elapsed = self._perform_webdriver_call(
             call=self._query_value, end_time=end_time, expected=expected, force=force,
             timeout=timeout,
         )
+        # import pdb ; pdb.set_trace()
         if expected is None and result:
             result = self._results[VALUE]
         return result, elapsed
@@ -605,21 +608,36 @@ class SWADLControl(SWADLBase):
                 report_me = f'    saved image: {file_name},\n'
             else:
                 report_me = ''
-            message = (
-                f'SWADL_TESTRESULT:\n'
-                f'    result: {"PASSED" if result else "FAILED"},\n'
-                f'    for control: {self.get_name()},\n'
-                f'    with selector: {self.selector},\n'
-                f'    with is_text: {self.is_text},\n'
-                f'    with has_text: {self.has_text},\n'
-                f'    with index: {self.index},\n'
-                f'    validating: {validation_name},\n'
-                f'    expected: {expected},\n'
-                f'    elapsed: {elapsed_time},\n'
-                f'    fatal: {fatal},\n'
-                f'{report_me}'
-                f'    comments: {comments}'
-            )
+            message_dict = SWADLDict()
+            message_dict = SWADLDict()
+            message_dict['result'] = "PASSED" if result else "FAILED"
+            message_dict['for control'] = self.get_name()
+            message_dict['with selector'] = self.selector
+            message_dict['is_text'] = self.is_text
+            message_dict['has_text'] = self.has_text
+            message_dict['index'] = self.index
+            message_dict['validation_name'] = validation_name
+            message_dict['expected'] = expected
+            message_dict['elapsed_time'] = elapsed_time
+            message_dict['fatal'] = fatal
+            message_dict['report_me'] = report_me
+            message_dict['comments'] = comments
+            message = bannerize(data=message_dict, title="SWADL Validation Result")
+            # (
+            #     f'SWADL_TESTRESULT:\n'
+            #     f'    result: {"PASSED" if result else "FAILED"},\n'
+            #     f'    for control: {self.get_name()},\n'
+            #     f'    with selector: {self.selector},\n'
+            #     f'    with is_text: {self.is_text},\n'
+            #     f'    with has_text: {self.has_text},\n'
+            #     f'    with index: {self.index},\n'
+            #     f'    validating: {validation_name},\n'
+            #     f'    expected: {expected},\n'
+            #     f'    elapsed: {elapsed_time},\n'
+            #     f'    fatal: {fatal},\n'
+            #     f'{report_me}'
+            #     f'    comments: {comments}'
+            # )
             cfgdict[RESULT_LOG].add(message)
             if result:
                 logger.info(message)
@@ -646,6 +664,7 @@ class SWADLControl(SWADLBase):
             try:
                 result = call()
             except StaleElementReferenceException:
+                print("STALE ELEMENT EXCEPTION===========================================================")
                 if time.time() > end_time:
                     break
                 self._refresh(force=True)

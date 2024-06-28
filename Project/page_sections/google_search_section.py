@@ -1,4 +1,4 @@
-# File: google_search_page.py
+# File: google_search_section.py
 # Purpose: To validate the SWADL (Test Automation Framework)
 
 import logging
@@ -23,7 +23,7 @@ class GoogleSearchPage(SWADLPageSection):
         self.search_box = SWADLControl(
             name="search_box",
             parent=self,
-            selector='[name="q"]',
+            selector='#APjFqb',
             validation={VALIDATE_VISIBLE: True},
         )
 
