@@ -6,10 +6,11 @@ import inspect
 import time
 
 from SWADL.engine.swadl_cfg import cfgdict
-from SWADL.engine.swadl_constants import DRIVER
+from SWADL.engine.swadl_constants import DRIVER, TEST_DATA
 from SWADL.engine.swadl_constants import SUBSTITUTION_SOURCES
 from SWADL.engine.swadl_constants import TEST_NAME
 from SWADL.engine.swadl_constants import TIMEOUT
+from SWADL.engine.swadl_dict import SWADLDict
 
 
 class SWADLBase(object):
@@ -33,6 +34,7 @@ class SWADLBase(object):
         assert name, (
             f"You must specify a valid 'name' keyword for this {self.__class__.__name__}"
         )
+        self.__dict__['__class__.__name__'] = self.__class__.__name__
         # Page sections can just have their class as their names, but for all others, it should be added.
         if self.__class__.__name__ == name:
             self.name = name
@@ -45,6 +47,7 @@ class SWADLBase(object):
         # these are to make this fuctionality avilable to every object using it
         self.cfgdict = cfgdict
         self.driver = self.cfgdict[DRIVER]
+        self.test_data = self.cfgdict[TEST_DATA]
 
         # sort out substitutions. If this has been specified, it's an instance override, so
         # replace the inherited one.

@@ -1,10 +1,10 @@
-# File: google_results_page.py
+# File: google_results_section.py
 # Purpose: To validate the SWADL (Test Automation Framework)
 
 import logging
 
 from SWADL.engine.swadl_constants import VALIDATE_VISIBLE
-from Project.flows.google_search_constants import SEARCH_RESULT_STRING
+from Project.flows.google_search_constants import SEARCH_RESULT_STRING, SEARCH_RESULT_TITLES_LIST
 from SWADL.engine.swadl_control import SWADLControl
 from SWADL.engine.swadl_base_section import SWADLPageSection
 from Project.flows.google_search_constants import SEARCH_RESULT_TITLES
@@ -20,26 +20,16 @@ class GoogleResultSection(SWADLPageSection):
         super().__init__(**kwargs)
         self.url = "https://www.google.com"
 
-        # for page load testing
         self.google_icon = SWADLControl(
             name="google_icon",
             parent=self,
             selector='img[alt="Google"]',
             validation=VALIDATE_VISIBLE,
         )
-        self.terms_link = SWADLControl(
-            name="terms_link",
-            parent=self,
-            selector='[href*="policies"][href*="terms"]',
-            validation=VALIDATE_VISIBLE,
-        )
-        self.validate_loaded_queue = (self.google_icon, self.terms_link)
-
-        # other controls
         self.search_box = SWADLControl(
             name="search_box",
             parent=self,
-            selector='[title="Search"]',
+            selector='#APjFqb',
             validation=VALIDATE_VISIBLE,
         )
         self.any_result_header = SWADLControl(
@@ -48,24 +38,24 @@ class GoogleResultSection(SWADLPageSection):
             selector='h3[class="LC20lb MBeuO DKV0Md"]',  #.DKV0Md
             validation=VALIDATE_VISIBLE,
         )
+        self.validate_loaded_queue = (self.google_icon, self.search_box)
 
-    def get_matching_results(self, test_data=None):
+    def get_matching_results(self):
         # Purpose: Returns matching test results if any
-        # Inputs: - (str)string_to_test - item to search for
-        # Notes: Google specific!
-        # WARNING: DESTROYS CONTENTS OF self.index!!!
+        # Inputs: SEARCH_RESULT_STRING - item to search for
+        # Returns: SEARCH_RESULT_TITLES_LIST
+        #          '{self.name} raw matching elements'
+        # Notes: DESTROYS CONTENTS OF self.index!!!
+        #        Uses has_text rather than is_text
+        self.validate_loaded()  # this line logs entry to this page in the test_data
 
-        self.any_result_header.has_text = test_data[SEARCH_RESULT_STRING]
-        raw_results = self.any_result_header.get_elements()
-        raw_count = len(raw_results)
-        result_list = []
-        if raw_count == 1:
-            results_list=[]
-
-        self.any_result_header.index = 0
-        self.any_result_header.get_elements(timeout=1)
+        raw_elements = f'{self.name} raw matching elements'
+        self.any_result_header.has_text = self.test_data[SEARCH_RESULT_STRING]
+        self.test_data[raw_elements] = self.any_result_header.get_elements()
+        raw_count = len(self.test_data[raw_elements])
+        self.test_data[SEARCH_RESULT_TITLES_LIST] = []
 
         for index in range(0, raw_count):
             self.any_result_header.index = index
-            result_list.append(self.any_result_header.get_value())
-        test_data[SEARCH_RESULT_TITLES] = result_list
+            found_value = self.any_result_header.get_value()
+            self.test_data[SEARCH_RESULT_TITLES_LIST].append(found_value)

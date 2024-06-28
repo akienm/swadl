@@ -3,7 +3,7 @@
 # Purpose: Akien's first unit tests for SWADL
 import logging
 
-from Project.flows.google_search_constants import SEARCH_KEY
+from Project.flows.google_search_constants import SEARCH_KEY, SEARCH_RESULT_TITLES_LIST
 from Project.flows.google_search_constants import SEARCH_RESULT_STRING
 from Project.flows.google_search_constants import SEARCH_RESULT_TITLES
 from Project.flows.google_search_flow import GoogleFlows
@@ -30,10 +30,10 @@ class TestGoogleSearchSWADLUnitTests(SWADL.engine.swadl_base_test.SWADLTest):
         self.test_data[SEARCH_KEY] = "Chromedriver"
         self.test_data[SEARCH_RESULT_STRING] = "ChromeDriver overview - Chrome for Developers"
 
-        self.google_flows.search(self.test_data)
-        self.google_flows.get_matching_results(self.test_data)
+        self.google_flows.search()
+        self.google_flows.get_matching_results()
 
-        assert len(self.test_data[SEARCH_RESULT_TITLES]) > 0, (
+        assert len(self.test_data[SEARCH_RESULT_TITLES_LIST]) > 0, (
             "The expected search result was not found. Expected to find "
-            f"'{self.test_data[SEARCH_RESULT_STRING]}'"
+            f"'{self.test_data[SEARCH_RESULT_TITLES_LIST]}'"
         )

@@ -1,4 +1,4 @@
-# File: google_search_page.py
+# File: google_search_section.py
 # Purpose: To validate the SWADL (Test Automation Framework)
 
 import logging
@@ -23,15 +23,16 @@ class GoogleSearchPage(SWADLPageSection):
         self.search_box = SWADLControl(
             name="search_box",
             parent=self,
-            selector='[name="q"]',
+            selector='#APjFqb',
             validation={VALIDATE_VISIBLE: True},
         )
 
         self.validate_loaded_queue = [self.search_box]
 
-    def do_search(self, test_data=None):
+    def do_search(self):
         # Purpose: loads page if it's not loaded
-        self.load_page(test_data)
+        # Inputs: SEARCH_KEY
+        self.load_page()
         # This
-        self.search_box.send_keys(value=test_data[SEARCH_KEY])
-        self.search_box.submit()  # TODO: AMM Asks if we need to make this take test_data as well...
+        self.search_box.send_keys(value=self.test_data[SEARCH_KEY])
+        self.search_box.submit()
