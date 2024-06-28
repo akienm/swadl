@@ -65,8 +65,6 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         cfgdict[FAILURE_LOG].close(f"for {self.get_name()}")
         cfgdict[RESULT_LOG].close(f"for {self.get_name()}")
         super().tearDown()
-        print("")
         print(bannerize(data=self.test_data, title="test_data"))
-        # import pdb ; pdb.set_trace()
         print(bannerize(data=self.__dict__, title='test object'))
         assert not self.accumulated_failures, pformat(accumulated_failures)

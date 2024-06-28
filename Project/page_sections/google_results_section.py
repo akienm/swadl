@@ -57,8 +57,5 @@ class GoogleResultSection(SWADLPageSection):
 
         for index in range(0, raw_count):
             self.any_result_header.index = index
-            import pdb ; pdb.set_trace()
-            print(f'raw elements={self.any_result_header.get_elements()}')
             found_value = self.any_result_header.get_value()
-            print(f'found value={found_value}')
             self.test_data[SEARCH_RESULT_TITLES_LIST].append(found_value)
