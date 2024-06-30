@@ -44,9 +44,6 @@ class Bannerize:
             if not isinstance(item, self.types_to_treat_as_string):
                 if item in self.list_of_completed_objects:
                     self.types_that_got_substituted.append(item)
-                    print("==================================================================================")
-                    print(f"DUPE FOUND FOR {item}")
-                    print("==================================================================================")
                     item = OBJECT_ALREADY_DISPLAYED
                 else:
                     self.list_of_completed_objects.append(item)

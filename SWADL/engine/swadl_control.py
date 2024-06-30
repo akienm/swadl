@@ -288,7 +288,7 @@ class SWADLControl(SWADLBase):
         )
         return self._get_enabled(end_time=end_time, expected=expected, timeout=timeout, **kwargs)[0]
 
-    def get_value(self, end_time=None, expected=True,
+    def get_value(self, end_time=None, expected=None,
                     timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
         # Method: get_value
         # Purpose: Returns value (text) of the control
@@ -505,7 +505,6 @@ class SWADLControl(SWADLBase):
                    timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
         # Method: get_value
         # Purpose: Returns the result of testing the VALIDATE_TEXT of the control
-
         result, elapsed = self._perform_webdriver_call(
             call=self._query_value, end_time=end_time, expected=expected, force=force,
             timeout=timeout,
@@ -561,10 +560,9 @@ class SWADLControl(SWADLBase):
         # Purpose: Helper that performs the actual comparison to get the value.
         #          Intended to be a helper method, for internal use
         try:
-            #import pdb ; pdb.set_trace()
             self._results[VALUE] = self._elements[0].text
         except (TypeError, IndexError):
-            self._results[VALUE] = False
+            self._results[VALUE] = None
         return self._results[VALUE]
 
     def _query_visible(self):
