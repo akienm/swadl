@@ -562,6 +562,7 @@ class SWADLControl(SWADLBase):
         # Purpose: Helper that performs the actual comparison to get the value.
         #          Intended to be a helper method, for internal use
         try:
+            import pdb ; pdb.set_trace()
             self._results[VALUE] = self._elements[0].text
         except (TypeError, IndexError):
             self._results[VALUE] = False
