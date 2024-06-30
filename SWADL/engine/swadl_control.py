@@ -510,7 +510,6 @@ class SWADLControl(SWADLBase):
             call=self._query_value, end_time=end_time, expected=expected, force=force,
             timeout=timeout,
         )
-        # import pdb ; pdb.set_trace()
         if expected is None and result:
             result = self._results[VALUE]
         return result, elapsed

@@ -30,7 +30,6 @@ class SWADLBase(object):
         #         - substitution_sources - list of string, values to use when calling resolve_substitutions()
         #           from within this object
         #         - key/value pairs to apply to the instance
-
         assert name, (
             f"You must specify a valid 'name' keyword for this {self.__class__.__name__}"
         )
@@ -39,8 +38,6 @@ class SWADLBase(object):
             name = f"({self.__class__.__name__}){name}"
         self.__dict__[ID] = name
         self.name = name
-
-        self.__dict__['__class__.__name__'] = self.__class__.__name__
 
         self.parent = None
         self.apply_kwargs(kwargs)
