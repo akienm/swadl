@@ -288,7 +288,7 @@ class SWADLControl(SWADLBase):
         )
         return self._get_enabled(end_time=end_time, expected=expected, timeout=timeout, **kwargs)[0]
 
-    def get_value(self, end_time=None, expected=True,
+    def get_value(self, end_time=None, expected=None,
                     timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
         # Method: get_value
         # Purpose: Returns value (text) of the control
@@ -505,12 +505,10 @@ class SWADLControl(SWADLBase):
                    timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
         # Method: get_value
         # Purpose: Returns the result of testing the VALIDATE_TEXT of the control
-
         result, elapsed = self._perform_webdriver_call(
             call=self._query_value, end_time=end_time, expected=expected, force=force,
             timeout=timeout,
         )
-        import pdb ; pdb.set_trace()
         if expected is None and result:
             result = self._results[VALUE]
         return result, elapsed
@@ -564,7 +562,7 @@ class SWADLControl(SWADLBase):
         try:
             self._results[VALUE] = self._elements[0].text
         except (TypeError, IndexError):
-            self._results[VALUE] = False
+            self._results[VALUE] = None
         return self._results[VALUE]
 
     def _query_visible(self):
@@ -623,21 +621,6 @@ class SWADLControl(SWADLBase):
             message_dict['report_me'] = report_me
             message_dict['comments'] = comments
             message = bannerize(data=message_dict, title="SWADL Validation Result")
-            # (
-            #     f'SWADL_TESTRESULT:\n'
-            #     f'    result: {"PASSED" if result else "FAILED"},\n'
-            #     f'    for control: {self.get_name()},\n'
-            #     f'    with selector: {self.selector},\n'
-            #     f'    with is_text: {self.is_text},\n'
-            #     f'    with has_text: {self.has_text},\n'
-            #     f'    with index: {self.index},\n'
-            #     f'    validating: {validation_name},\n'
-            #     f'    expected: {expected},\n'
-            #     f'    elapsed: {elapsed_time},\n'
-            #     f'    fatal: {fatal},\n'
-            #     f'{report_me}'
-            #     f'    comments: {comments}'
-            # )
             cfgdict[RESULT_LOG].add(message)
             if result:
                 logger.info(message)

@@ -6,7 +6,7 @@ import inspect
 import time
 
 from SWADL.engine.swadl_cfg import cfgdict
-from SWADL.engine.swadl_constants import DRIVER, TEST_DATA
+from SWADL.engine.swadl_constants import DRIVER, TEST_DATA, ID
 from SWADL.engine.swadl_constants import SUBSTITUTION_SOURCES
 from SWADL.engine.swadl_constants import TEST_NAME
 from SWADL.engine.swadl_constants import TIMEOUT
@@ -30,16 +30,14 @@ class SWADLBase(object):
         #         - substitution_sources - list of string, values to use when calling resolve_substitutions()
         #           from within this object
         #         - key/value pairs to apply to the instance
-
         assert name, (
             f"You must specify a valid 'name' keyword for this {self.__class__.__name__}"
         )
-        self.__dict__['__class__.__name__'] = self.__class__.__name__
         # Page sections can just have their class as their names, but for all others, it should be added.
-        if self.__class__.__name__ == name:
-            self.name = name
-        else:
-            self.name = f"({self.__class__.__name__}){name}"
+        if not self.__class__.__name__ == name:
+            name = f"({self.__class__.__name__}){name}"
+        self.__dict__[ID] = name
+        self.name = name
 
         self.parent = None
         self.apply_kwargs(kwargs)
