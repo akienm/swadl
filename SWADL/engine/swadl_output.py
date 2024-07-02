@@ -7,7 +7,6 @@ from SWADL.engine.swadl_base import SWADLBase
 
 
 class Output(SWADLBase):
-    # Class: Output
     # Purpose: A write only logging mechanism to output test results to files instead of the
     #          console.
 
@@ -20,10 +19,8 @@ class Output(SWADLBase):
     writing_done = False
 
     def __init__(self, file_name, comment='', name=None):
-        # Method: __init__
         # Purpose: Store the filename
         # Inputs: - str:file_name
-        #super().__init__(name=name)
         self.name = name
         self.file_name = file_name
         if os.path.exists(self.file_name):
@@ -33,7 +30,6 @@ class Output(SWADLBase):
             self.add(f"Started {file_name} {comment}")
 
     def add(self, stuff_to_add):
-        # Method: add
         # Purpose: Takes a string or collection of strings and adds them to the file
         # Inputs: - (list, tuple, str):stuff_to_add - the things to be added
         if not self.writing_done:
@@ -44,13 +40,11 @@ class Output(SWADLBase):
                     handle.write(f'{self.get_timestamp()}::{line}\n')
 
     def close(self, comment=''):
-        # Method: close
         # Purpose: Write and end point into the log
         if not self.writing_done:
             self.add(f"Done test_failures.log {comment}")
             self.writing_done = True
 
     def __del__(self):
-        # Method: __del__
         # Purpose: Close the log
         self.close()

@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 class GoogleResultSection(SWADLPageSection):
     # Purpose: Google search page, for framework unit tests
 
-    def __init__(self, **kwargs):
-        # Purpose: Unit test fixture.
-        super().__init__(**kwargs)
+    def __init__(self, name="GoogleResultSection", **kwargs):
+        # Purpose: describe the page
+        super().__init__(name=name, **kwargs)
         self.url = "https://www.google.com"
 
         self.google_icon = SWADLControl(
@@ -38,13 +38,16 @@ class GoogleResultSection(SWADLPageSection):
             selector='h3[class="LC20lb MBeuO DKV0Md"]',  #.DKV0Md
             validation=VALIDATE_VISIBLE,
         )
+
+        # used by self.validate_loaded()
         self.validate_loaded_queue = (self.google_icon, self.search_box)
 
     def get_matching_results(self):
         # Purpose: Returns matching test results if any
-        # Inputs: SEARCH_RESULT_STRING - item to search for
-        # Returns: SEARCH_RESULT_TITLES_LIST
-        #          '{self.name} raw matching elements'
+        # Keys: SEARCH_RESULT_STRING - item to search for
+        # Emits: "GoogleResultSection loaded ok": True = page load validated
+        #        f'{self.name} raw matching elements' = list
+        #        SEARCH_RESULT_TITLES_LIST as list of titles which have the passed text
         # Notes: DESTROYS CONTENTS OF self.index!!!
         #        Uses has_text rather than is_text
         self.validate_loaded()  # this line logs entry to this page in the test_data

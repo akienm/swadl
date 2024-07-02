@@ -13,7 +13,6 @@ from SWADL.engine.swadl_constants import TEST_NAME
 from SWADL.engine.swadl_constants import TIMEOUT
 
 
-
 class SWADLBase(object):
     # Purpose: Base class for UI interactive code. Wraps interaction with webdriver
     # Notes: Adds cfgdict and driver to all UI control classes
@@ -29,11 +28,11 @@ class SWADLBase(object):
 
     def __init__(self, name=None, substitution_sources=None, **kwargs):
         # Purpose: Initilizes the instance, appies unused kwargs
-        # Inputs: - (str)name - The name of this object. Used for reporting.
+        # Inputs: - name - The name of this object. Used for reporting. REQUIRED!
         #         - substitution_sources - list of string, values to use when calling resolve_substitutions()
         #           from within this object
         #         - key/value pairs to apply to the instance
-        assert name, (
+        assert name or self.name, (
             f"You must specify a valid 'name' keyword for this {self.__class__.__name__}"
         )
         # Page sections can just have their class as their names, but for all others, it should be added.
@@ -61,22 +60,35 @@ class SWADLBase(object):
                 self.substitution_sources.append(item)
 
     def __str__(self):
+        # Purpose: adds the self.name to the base __str__() result
         base = super().__str__()
         return f'{base}/{self.get_name()}'
 
     def apply_kwargs(self, kwargs):
         # Purpose: Makes otherwise unused kwargs pairs into members of `self`
         # Inputs: (dict)kwargs: dictionary who's values we want to add
+        # We use this to add additional keys to an object that can be picked
+        # up later.
         self.__dict__.update(**kwargs)
 
     def bannerize(self, data=None, title=None):
+        # Purpose: This hooks bannerizer into the SWADL classes.
+        # See bannerizer.py for more information.
+        # Used for reporting.
         if data is None:
             data = self.__dict__
         return bannerizer.bannerize(data=data, title=title)
 
+    def dump(self):
+        # Purpose: dump local contents for debugging
+        result = self.bannerize(data=self.__dict__, title=self.get_name())
+        print(result)
+        return result
+
     def get_name(self):
         # Purpose: Returns the name of the thing
         # Notes: If self.parent is not None, prefixes the name with the parent's name
+        # the names get used all over to identify the object we're reporting on
         test_name = cfgdict.get(TEST_NAME, '')
         if test_name:
             if self.name != test_name:
@@ -128,6 +140,8 @@ class SWADLBase(object):
         result = in_string
         before = in_string
 
+        # this loop is here so if we won't loop forever
+        # we stop as soon as it stops making changes.
         while iterations_to_go > 0:
             iterations_to_go -= 1
             result = result.format_map(master_hash)
