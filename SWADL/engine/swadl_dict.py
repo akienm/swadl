@@ -1,7 +1,7 @@
 
 from collections import OrderedDict
 
-from SWADL.engine.swadl_utils import bannerize
+from SWADL.engine.bannerizer import bannerize
 
 
 class SWADLDict(OrderedDict):

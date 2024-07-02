@@ -29,7 +29,7 @@ class TestGoogleSearchSWADLUnitTests(SWADL.engine.swadl_base_test.SWADLTest):
         #          - control.validate() works
 
         self.test_data[SEARCH_KEY] = "Chromedriver"
-        self.test_data[SEARCH_RESULT_STRING] = "ChromeDriver XXoverview - Chrome for Developers"
+        self.test_data[SEARCH_RESULT_STRING] = "ChromeDriver overview - Chrome for Developers"
 
         self.google_flows.search()
         self.google_flows.get_matching_results()

@@ -1,16 +1,17 @@
 # File: SWADLbase.py
 # Purpose: Base class for UI interactive code. Wraps interaction with webdriver
-
+import datetime
 import gc
 import inspect
 import time
 
+from SWADL.engine import bannerizer
 from SWADL.engine.swadl_cfg import cfgdict
 from SWADL.engine.swadl_constants import DRIVER, TEST_DATA, ID
 from SWADL.engine.swadl_constants import SUBSTITUTION_SOURCES
 from SWADL.engine.swadl_constants import TEST_NAME
 from SWADL.engine.swadl_constants import TIMEOUT
-from SWADL.engine.swadl_dict import SWADLDict
+
 
 
 class SWADLBase(object):
@@ -23,6 +24,8 @@ class SWADLBase(object):
     #          if the cfgdict[SUBSTITUTION_SOURCES] exists and contains a list of dictionaries,
     #          all calls can share that one as well.
     #          WARNING: ALWAYS BEWARE OF KEY COLLISIONS, THAT'S WHY WE HAVE test_data.dump()!
+
+    name = None
 
     def __init__(self, name=None, substitution_sources=None, **kwargs):
         # Purpose: Initilizes the instance, appies unused kwargs
@@ -57,10 +60,19 @@ class SWADLBase(object):
             for item in cfgdict[SUBSTITUTION_SOURCES]:
                 self.substitution_sources.append(item)
 
+    def __str__(self):
+        base = super().__str__()
+        return f'{base}/{self.get_name()}'
+
     def apply_kwargs(self, kwargs):
         # Purpose: Makes otherwise unused kwargs pairs into members of `self`
         # Inputs: (dict)kwargs: dictionary who's values we want to add
         self.__dict__.update(**kwargs)
+
+    def bannerize(self, data=None, title=None):
+        if data is None:
+            data = self.__dict__
+        return bannerizer.bannerize(data=data, title=title)
 
     def get_name(self):
         # Purpose: Returns the name of the thing
@@ -77,6 +89,15 @@ class SWADLBase(object):
             parent_name = ""
 
         return f"{test_name}{parent_name}{self.name}"
+
+    @classmethod
+    def get_timestamp(cls, time=None):
+        # Purpose: To have a standardized timestamp for anything that needs it.
+        # Optionally takes a datetime value, or uses now.
+        # Returns: yymmdd_hhmmss.xxxxxx as string
+        if time is None:
+            time = datetime.datetime.now()
+        return time.strftime("%Y%m%d_%H%M%S.%f")
 
     class _SafeDict(dict):
         # Purpose: Fills in f-string style braced arguments from keys in the
@@ -181,3 +202,4 @@ class SWADLBase(object):
         if end_time < time_now:
             end_time = time_now + minimum
         return end_time - time_now
+

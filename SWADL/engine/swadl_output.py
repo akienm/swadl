@@ -3,10 +3,10 @@
 
 import os
 
-from SWADL.engine.swadl_utils import get_timestamp
+from SWADL.engine.swadl_base import SWADLBase
 
 
-class Output():
+class Output(SWADLBase):
     # Class: Output
     # Purpose: A write only logging mechanism to output test results to files instead of the
     #          console.
@@ -19,10 +19,12 @@ class Output():
     # Purpose: To determine if we're shutting down and we should ignore anything else
     writing_done = False
 
-    def __init__(self, file_name, comment=''):
+    def __init__(self, file_name, comment='', name=None):
         # Method: __init__
         # Purpose: Store the filename
         # Inputs: - str:file_name
+        #super().__init__(name=name)
+        self.name = name
         self.file_name = file_name
         if os.path.exists(self.file_name):
             os.remove(self.file_name)
@@ -39,7 +41,7 @@ class Output():
                 stuff_to_add = [stuff_to_add]
             with open(self.file_name, "a") as handle:
                 for line in stuff_to_add:
-                    handle.write(f'{get_timestamp()}::{line}\n')
+                    handle.write(f'{self.get_timestamp()}::{line}\n')
 
     def close(self, comment=''):
         # Method: close

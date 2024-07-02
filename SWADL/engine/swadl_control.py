@@ -29,7 +29,6 @@ from SWADL.engine.swadl_constants import VALIDATE_VISIBLE
 from SWADL.engine.swadl_constants import VALUE
 from SWADL.engine.swadl_constants import VISIBLE
 from SWADL.engine.swadl_dict import SWADLDict
-from SWADL.engine.swadl_utils import get_timestamp, bannerize
 from SWADL.engine.swadl_output import Output
 
 logger = logging.getLogger(__name__)
@@ -601,7 +600,7 @@ class SWADLControl(SWADLBase):
                     f'{round(elapsed_time, 4)} seconds'
                 )
             if not result:
-                file_name = f'FAILURE_{get_timestamp()}.png'
+                file_name = f'FAILURE_{self.get_timestamp()}.png'
                 self.driver.save_screenshot(file_name)
                 report_me = f'    saved image: {file_name},\n'
             else:
@@ -620,7 +619,7 @@ class SWADLControl(SWADLBase):
             message_dict['fatal'] = fatal
             message_dict['report_me'] = report_me
             message_dict['comments'] = comments
-            message = bannerize(data=message_dict, title="SWADL Validation Result")
+            message = self.bannerize(data=message_dict, title="SWADL Validation Result")
             cfgdict[RESULT_LOG].add(message)
             if result:
                 logger.info(message)
