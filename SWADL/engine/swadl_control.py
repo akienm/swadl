@@ -40,7 +40,6 @@ accumulated_failures = []
 
 class SWADLControl(SWADLBase):
     """
-    Class: SWADLControl
     Purpose: Interfaces to controls
     Notes:
         Through most of these calls
@@ -84,7 +83,6 @@ class SWADLControl(SWADLBase):
 
     def __init__(self, **kwargs):
         """
-        Method: __init__
         Purpose: Initialize instance
         Args:
             - selector (string/required) the CSS selector to use for the control
@@ -131,7 +129,6 @@ class SWADLControl(SWADLBase):
     def _check_actionable(self, end_time=None, force=False, kwargs=None,
                           timeout=cfgdict[SELENIUM_PAGE_DEFAULT_TIMEOUT]):
         """
-        Method: _check_clickable
         Purpose: Applies kwargs, calculates end_time, and runs all the checks to see that a control
                  is actionable.
         Args:
@@ -169,7 +166,6 @@ class SWADLControl(SWADLBase):
     def click(self, end_time=None, force=False,
               timeout=cfgdict[SELENIUM_PAGE_DEFAULT_TIMEOUT], **kwargs):
         """
-        Method: click
         Purpose: Click on the control
         Args:
             - end_time (time float/0) time at which user called timeout expires
@@ -194,7 +190,6 @@ class SWADLControl(SWADLBase):
 
     def _do_click(self):
         """
-        Method: _do_click
         Purpose: Performs the actual click
         Returns: bool of whether successful
         Notes: Click will fail and this return False if the thing is obscured!
@@ -210,7 +205,6 @@ class SWADLControl(SWADLBase):
     def get_elements(self, end_time=None, timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT],
                      **kwargs):
         """
-        Method: get_elements
         Purpose: Fetches elements based on self.selector, self.index, self.is_text and
                  self.has_text (is_text will win if both are present)
         Args:
@@ -259,14 +253,12 @@ class SWADLControl(SWADLBase):
         return processed_list
 
     def clear_cached_status(self):
-        # Method: clear_cached_status
         # Purpose: Reset the cache data to blank. Will cause next option to refetch
         self._elements = []
         self._results = {}
 
     def get_exist(self, end_time=None, expected=True, force=True,
                   timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: get_exist
         # Purpose: Returns true if control exists
         end_time, element_list = self._check_actionable(
             end_time=end_time,
@@ -278,7 +270,6 @@ class SWADLControl(SWADLBase):
 
     def get_enabled(self, end_time=None, expected=True,
                     timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: get_enabled
         # Purpose: Returns true if control enabled
         end_time, element_list = self._check_actionable(
             end_time=end_time,
@@ -289,7 +280,6 @@ class SWADLControl(SWADLBase):
 
     def get_value(self, end_time=None, expected=None,
                     timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: get_value
         # Purpose: Returns value (text) of the control
         end_time, element_list = self._check_actionable(
             end_time=end_time,
@@ -300,7 +290,6 @@ class SWADLControl(SWADLBase):
 
     def get_visible(self, end_time=None, expected=True,
                     timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: get_visible
         # Purpose: Returns true if control visible
         end_time, element_list = self._check_actionable(
             end_time=end_time,
@@ -311,7 +300,6 @@ class SWADLControl(SWADLBase):
 
     def get_unique(self, end_time=None, expected=True,
                    timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: get_unique
         # Purpose: Returns true if control is unique
         end_time, element_list = self._check_actionable(
             end_time=end_time,
@@ -323,7 +311,6 @@ class SWADLControl(SWADLBase):
     def send_keys(self, end_time=None, fatal=False, force=False, value=None,
                   timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
         """
-        Method: send_keys
         Purpose: Send text input to a control
         Args:
             - fatal (bool/default=False) - Should a failure be fatal
@@ -343,7 +330,6 @@ class SWADLControl(SWADLBase):
 
     def submit(self, end_time=None, fatal=False, force=False, value=None,
                timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: submit
         # Purpose: Sends submit to the control
         end_time, element_list = self._check_actionable(
             end_time=end_time,
@@ -355,7 +341,6 @@ class SWADLControl(SWADLBase):
     def validate_click(self, end_time=None, expected=True, fatal=False, force=True,
                        timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
         """
-        Method: validate_click
         Purpose: Perform the click as part of the engine based processing of controls
         """
         result, elapsed_time = self.click(force=force, end_time=end_time, timeout=timeout)
@@ -370,7 +355,6 @@ class SWADLControl(SWADLBase):
 
     def validate_exist(self, end_time=None, expected=True, fatal=False, force=True,
                        timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: validate_exist
         # Purpose: verify whether a control exists
         result, elapsed_time = self._get_exist(end_time=end_time, expected=expected, force=force,
                                                timeout=timeout)
@@ -385,7 +369,6 @@ class SWADLControl(SWADLBase):
 
     def validate_enabled(self, end_time=None, expected=True, fatal=False, force=False,
                          timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: validate_enabled
         # Purpose: verify whether a control is enabled
         result, elapsed_time = self._get_enabled(end_time=end_time, expected=expected, force=force,
                                                  timeout=timeout)
@@ -401,7 +384,6 @@ class SWADLControl(SWADLBase):
     def validate_input(self=None, end_time=None, expected=True, fatal=False, force=False,
                        timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
         """
-        Method: validate_input
         Purpose: Perform the input as part of the engine based processing of controls
         """
         start_time = time.time()
@@ -418,7 +400,6 @@ class SWADLControl(SWADLBase):
 
     def validate_text(self=None, end_time=None, expected=None, fatal=False, force=False,
                       timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: validate_text
         # Purpose: verify whether a control's value matches it's VALIDATE_TEXT value
         expected_to_test = expected if expected else self.VALIDATE_TEXT
         result, elapsed_time = self._get_value(
@@ -437,7 +418,6 @@ class SWADLControl(SWADLBase):
 
     def validate_visible(self, end_time=None, expected=True, fatal=False, force=False,
                          timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: validate_visible
         # Purpose: verify whether a control is visible
         result, elapsed_time = self._get_visible(end_time=end_time, expected=expected, force=force,
                                                  timeout=timeout)
@@ -452,7 +432,6 @@ class SWADLControl(SWADLBase):
 
     def validate_unique(self, end_time=None, expected=True, fatal=False, force=False,
                         timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Method: validate_unique
         # Purpose: verify whether a control is unique
         result, elapsed_time = self._get_unique(end_time=end_time, expected=expected, force=force,
                                                 timeout=timeout)
@@ -467,7 +446,6 @@ class SWADLControl(SWADLBase):
 
     def validate(self, end_time=None, fatal=False, timeout=cfgdict[SELENIUM_PAGE_DEFAULT_TIMEOUT],
                  validation=None, **kwargs):
-        # Method: validate
         # Purpose: Given a validation dict, or a self.validation dict (if none is passed)
         #          Then validate that each thing is of the correct value
         # Returns: (bool) was the validation successful
@@ -484,7 +462,6 @@ class SWADLControl(SWADLBase):
 
     def _get_exist(self, end_time=None, expected=None, force=True,
                    timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
-        # Method: get_exist
         # Purpose: Returns the result of testing the existence of the control
         return self._perform_webdriver_call(
             call=self._query_exist, end_time=end_time, expected=expected, force=force,
@@ -493,7 +470,6 @@ class SWADLControl(SWADLBase):
 
     def _get_enabled(self, end_time=None, expected=None, force=False,
                      timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
-        # Method: get_enabled
         # Purpose: Returns the result of testing the enabled status of the control
         return self._perform_webdriver_call(
             call=self._query_enabled, end_time=end_time, expected=expected, force=force,
@@ -502,7 +478,6 @@ class SWADLControl(SWADLBase):
 
     def _get_value(self, end_time=None, expected=None, force=False,
                    timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
-        # Method: get_value
         # Purpose: Returns the result of testing the VALIDATE_TEXT of the control
         result, elapsed = self._perform_webdriver_call(
             call=self._query_value, end_time=end_time, expected=expected, force=force,
@@ -514,7 +489,6 @@ class SWADLControl(SWADLBase):
 
     def _get_visible(self, end_time=None, expected=None, force=False,
                      timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
-        # Method: get_visible
         # Purpose: Returns the result of testing the visibility of the control
         return self._perform_webdriver_call(
             call=self._query_visible, end_time=end_time, expected=expected, force=force,
@@ -523,7 +497,6 @@ class SWADLControl(SWADLBase):
 
     def _get_unique(self, end_time=None, expected=None, force=False,
                     timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
-        # Method: get_unique
         # Purpose: Returns the result of testing the unique status of the control
         return self._perform_webdriver_call(
             call=self._query_unique, end_time=end_time, expected=expected, force=force,
@@ -531,7 +504,6 @@ class SWADLControl(SWADLBase):
         )
 
     def _query_enabled(self):
-        # Method: _get_enabled
         # Purpose: Helper that performs the actual comparison to get the enabled state.
         #          Intended to be a helper method, for internal use
         try:
@@ -541,21 +513,18 @@ class SWADLControl(SWADLBase):
         return self._results[ENABLED]
 
     def _query_exist(self):
-        # Method: _get_exist
         # Purpose: Helper that performs the actual comparison to get the exist state.
         #          Intended to be a helper method, for internal use
         self._results[EXIST] = bool(self._elements)
         return self._results[EXIST]
 
     def _query_unique(self):
-        #  Method: _get_unique
         # Purpose: Helper that performs the actual comparison to get the unique state.
         #          Intended to be a helper method, for internal use
         self._results[UNIQUE] = len(self._elements) == 1
         return self._results[UNIQUE]
 
     def _query_value(self):
-        # Method: _get_value
         # Purpose: Helper that performs the actual comparison to get the value.
         #          Intended to be a helper method, for internal use
         try:
@@ -565,7 +534,6 @@ class SWADLControl(SWADLBase):
         return self._results[VALUE]
 
     def _query_visible(self):
-        # Method: _get_visible
         # Purpose: Helper that performs the actual comparison to get the visible state.
         #          Intended to be a helper method, for internal use
         try:
@@ -575,7 +543,6 @@ class SWADLControl(SWADLBase):
         return self._results[VISIBLE]
 
     def _refresh(self, end_time=None, expected=None, force=False, timeout=0):
-        # Method: _refresh
         # Purpose: Reloads the element list. Intended to be a helper method, for internal use
         if force or not self.__dict__.get(CACHE):
             self.clear_cached_status()
@@ -585,7 +552,6 @@ class SWADLControl(SWADLBase):
 
     def _validate(self, comments='', elapsed_time='', expected=None, fatal=False, report=True,
                   result=None, validation_name=None):
-        # Method: _validate
         # Purpose: reports on the pass/fail status of a validation call
 
         if report:
@@ -635,9 +601,9 @@ class SWADLControl(SWADLBase):
 
     def _perform_webdriver_call(self, call, end_time=None, expected=None, force=False,
                                 timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
-        # Method: _perform_webdriver_call
         # Purpose: Wraps the webdriver call in a time-based retry mechanism (retry until match or
         #          the timeout expires). Intended to be a helper method, for internal use
+        # WARNING: IF AN EXPECTED VALUE IS SPECIFIED AND NOT MET, THIS METHOD WILL RETURN FALSE!
         end_time = end_time if end_time else time.time() + timeout
         self._refresh(end_time=end_time, expected=expected, force=force, timeout=timeout)
         result = False
@@ -647,8 +613,10 @@ class SWADLControl(SWADLBase):
                 result = call()
             except StaleElementReferenceException:
                 print("STALE ELEMENT EXCEPTION===========================================================")
+                # if we got a stale element exception, check that we're not over time...
                 if time.time() > end_time:
                     break
+                # and if we're not, force a refresh
                 self._refresh(force=True)
                 result = False
                 continue
@@ -656,8 +624,10 @@ class SWADLControl(SWADLBase):
             if expected is None:
                 break
             else:
+                # if we got the value we expected, then we're done!
                 if result == expected:
                     break
+            # if we've exceeded our time, then we're done!
             if time.time() > end_time:
                 break
         if expected is not None:

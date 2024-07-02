@@ -4,11 +4,6 @@
 # standard libraries
 import sys
 
-# selenium imports
-
-
-# SWADL libs
-
 # Section: Don't clutter up the workspace. Adding this here makes PYTHONDONTWRITEBYTECODE
 # less important.
 sys.dont_write_bytecode = True
