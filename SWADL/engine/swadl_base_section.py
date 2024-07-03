@@ -74,7 +74,7 @@ class SWADLPageSection(SWADLBase):
             assert url, "Unable to Section.open() with the url of 'None'."
             self.driver.get(url)
         else:
-            logger.debug(
+            self.log.debug(
                 f"SWADL.{self.get_name()}.load_page() asked to load page already loaded for "
                 f"{self.url}"
             )

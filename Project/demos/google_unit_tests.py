@@ -32,22 +32,8 @@ class TestGoogleSearchSWADLUnitTests(SWADL.engine.swadl_base_test.SWADLTest):
         self.google_flows.search()
         self.google_flows.get_matching_results()
 
-        #TODO: Put all this into the assertions on the base class (since this is an "in" comparison)
-        # Produce result message
-        if self.test_data[SEARCH_RESULT_STRING] in self.test_data[SEARCH_RESULT_TITLES_LIST]:
-            result = PASSED
-            found = "found"
-        else:
-            result = FAILED
-            found = "NOT FOUND"
-        self.test_data[FINAL_RESULT_MESSAGE] = (
-            f"{self.name} reports {result}, "
-            f"The expected search result was {found}. "
-            "Expected to find "
-            f"'{self.test_data[SEARCH_RESULT_STRING]}' in {self.test_data[SEARCH_RESULT_TITLES_LIST]}"
+        self.assert_in(
+            member=self.test_data[SEARCH_RESULT_STRING],
+            container=self.test_data[SEARCH_RESULT_TITLES_LIST],
         )
 
-        # fail the test if necessary, else print the passing message
-        if result == FAILED:
-            raise AssertionError(self.test_data[FINAL_RESULT_MESSAGE])
-        print(self.test_data[FINAL_RESULT_MESSAGE])

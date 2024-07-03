@@ -9,7 +9,6 @@ from SWADL.engine.swadl_cfg import cfgdict
 from SWADL.engine.swadl_constants import FAILURE_LOG, TEST_OBJECT, TEST_DATA
 from SWADL.engine.swadl_constants import RESULT_LOG
 from SWADL.engine.swadl_constants import TEST_NAME
-from SWADL.engine.swadl_control import accumulated_failures
 from SWADL.engine.swadl_output import Output
 
 
@@ -67,4 +66,4 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         cfgdict[RESULT_LOG].close(f"for {self.get_name()}")
         super().tearDown()
         print(self.bannerize(data=self.__dict__, title='test object'))
-        assert not self.accumulated_failures, pformat(accumulated_failures)
+        assert not self.accumulated_failures, pformat(self.accumulated_failures)
