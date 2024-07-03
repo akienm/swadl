@@ -3,15 +3,23 @@
 import datetime
 import gc
 import inspect
+import logging
 import time
+import traceback
 
 from SWADL.engine import bannerizer
 from SWADL.engine.swadl_cfg import cfgdict
-from SWADL.engine.swadl_constants import DRIVER, TEST_DATA, ID
+from SWADL.engine.swadl_constants import DRIVER, TEST_DATA, ID, PASSED, FAILED, MESSAGE, REPORTING_DICT, SELF__DICT__, \
+    FATAL, TEST_OBJECT, RESULT, ARGSFIELDS, HELPER, ARGS, KWARGS, LOGICAL_RESULT, TIME_STARTED, TIME_FINISHED, \
+    ARGSCOUNT, ARGSCOUNT_OK, STACKTRACE, WARN, ASSERT, ERROR, TITLE
 from SWADL.engine.swadl_constants import SUBSTITUTION_SOURCES
 from SWADL.engine.swadl_constants import TEST_NAME
 from SWADL.engine.swadl_constants import TIMEOUT
+from SWADL.engine.swadl_dict import SWADLDict
+from SWADL.engine.swadl_exceptions import FrameworkError
 
+
+logger = logging.getLogger(__name__)
 
 class SWADLBase(object):
     # Purpose: Base class for UI interactive code. Wraps interaction with webdriver
@@ -217,3 +225,546 @@ class SWADLBase(object):
             end_time = time_now + minimum
         return end_time - time_now
 
+    #######################################################################
+    #######################################################################
+    #######################################################################
+    #######################################################################
+    #######################################################################
+    #######################################################################
+    #######################################################################
+    #######################################################################
+    #######################################################################
+    #######################################################################
+
+
+    def make_framework_error(self, message=None, reporting_dict=None):
+        framework_error = FrameworkError(
+            self.bannerize(
+                {
+                    "FrameworkError": {
+                        MESSAGE: message,
+                        REPORTING_DICT: reporting_dict,
+                        SELF__DICT__: self.__dict__,
+                    }
+                }
+            )
+        )
+        return framework_error
+
+    def assertion_post_processor(self,
+                     argsfields=None,
+                     message=None,
+                     helper=None,
+                     args=None,
+                     kwargs=None,
+            ):
+        reporting_dict = SWADLDict()
+        reporting_dict[TITLE] = 'SWADL Validation'
+        reporting_dict[ID] = inspect.stack()[1][0].f_code.co_name
+        reporting_dict[ARGSFIELDS] = argsfields
+        reporting_dict[MESSAGE] = message
+        reporting_dict[HELPER] = helper
+        reporting_dict[ARGS] = args
+        reporting_dict[KWARGS] = kwargs
+
+        reporting_dict[LOGICAL_RESULT] = False
+        reporting_dict[RESULT] = "Failed to complete"
+        reporting_dict[SELF__DICT__] = self.__dict__
+        reporting_dict[TIME_STARTED] = time.time()
+        reporting_dict[TIME_FINISHED] = time.time()
+        reporting_dict[ARGSCOUNT] = len(reporting_dict[ARGS])
+        reporting_dict[ARGSCOUNT_OK] = len(reporting_dict[ARGS]) > 1
+        reporting_dict[STACKTRACE] = traceback.format_stack()
+
+        if len(reporting_dict[ARGS]) < len(reporting_dict[ARGSFIELDS]):
+            raise self.make_framework_error(
+                message="failed because not passed enough args",
+                reporting_dict=reporting_dict,
+            )
+
+        reporting_dict[LOGICAL_RESULT] = reporting_dict[HELPER](reporting_dict)
+        reporting_dict[TIME_FINISHED] = time.time()
+
+        if reporting_dict[LOGICAL_RESULT]:
+            reporting_dict[RESULT] = PASSED
+        else:
+            reporting_dict[RESULT] = FAILED
+            self.test_data[TEST_OBJECT].accumulated_failures.append(reporting_dict)
+
+        fatal = reporting_dict[KWARGS].get(FATAL, False)
+        message = self.bannerize(reporting_dict)
+        if reporting_dict[ID].upper().startswith(ASSERT):
+            logger.critical(message)
+            if fatal:
+                raise AssertionError(message)
+        elif reporting_dict[ID].upper().startswith(ERROR):
+            logger.error(message)
+            if fatal:
+                raise Exception(message)
+        elif reporting_dict[ID].upper().startswith(WARN):
+            logger.warn(message)
+
+        return reporting_dict[LOGICAL_RESULT]
+
+    ################################################################################
+
+    def _logical_test_equal(self, reporting_dict=None):
+        return reporting_dict[ARGS][0] == reporting_dict[ARGS][1]
+
+    def assertEqual(self, *args, **kwargs):
+        return self.assertion_post_processor(
+            argsfields=['x', 'y'],
+            message='{x} and {y} should be equal',
+            helper=self._logical_test_equal,
+            args=args,
+            kwargs=kwargs,
+        )
+    def requireEqual(self, *args, **kwargs):
+        return self.assertion_post_processor(
+            argsfields=['x', 'y'],
+            message='{x} and {y} should be equal',
+            helper=self._logical_test_equal,
+            args=args,
+            kwargs=kwargs,
+        )
+    def expectEqual(self, *args, **kwargs):
+        return self.assertion_post_processor(
+            argsfields=['x', 'y'],
+            message='{x} and {y} should NOT be equal',
+            helper=self._logical_test_equal,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    ################################################################################
+    def _logical_test_not_equal(self, *args, **kwargs):
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[FIRST, SECOND, MESSAGE],
+            defaults={
+                FIRST: None,
+                SECOND: None,
+                MESSAGE: None,
+                VALIDATION_TESTS: NOT_EQUAL,
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = (kwargs[FIRST] == kwargs[SECOND]) is False
+        return self._post_process_logic(kwargs)
+
+    def expectNotEqual(self, *args, **kwargs):
+        return self._logical_test_not_equal(*args, validation_type=EXPECT, **kwargs)
+
+    def verifyNotEqual(self, *args, **kwargs):
+        return self._logical_test_not_equal(*args, validation_type=VERIFY, **kwargs)
+
+    def assertNotEqual(self, *args, **kwargs):
+        return self._logical_test_not_equal(*args, validation_type=ASSERT, **kwargs)
+
+    expect_not_equal = expectNotEqual
+    verify_not_equal = verifyNotEqual
+    assert_not_equal = assertNotEqual
+
+    ################################################################################
+    def _logical_test_error(self, *args, **kwargs):
+        """
+        Method:
+            _logical_test_error
+
+        Purpose:
+            Used by verify_error, assert_error, expected_error to perform the requisite
+            setup and teardown to report a failed validation.
+
+        Parameters:
+            No parameters are required, but some optional, useful ones include:
+            - fatal (bool): the result should exit the test
+            - message (str): the message to use to report success
+
+        Returns:
+            - False (because after all, the test failed)
+        """
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[MESSAGE, FATAL],
+            defaults={
+                MESSAGE: f'{kwargs[VALIDATION_TYPE]} error',
+                FATAL: False,
+                VALIDATION_TESTS: ERROR,
+                TEST_RESULT_STRING: ERROR
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = False
+        return self._post_process_logic(kwargs)
+
+    def expectError(self, *args, **kwargs):
+        return self._logical_test_error(
+            *args,
+            validation_type=EXPECT,
+            test_result_string=ERROR,
+            **kwargs  # pycharm complained about trailing comma after **, so removed it. -amm
+        )
+
+    def verifyError(self, *args, **kwargs):
+        return self._logical_test_error(
+            *args,
+            validation_type=VERIFY,
+            test_result_string=ERROR,
+            **kwargs  # pycharm complained about trailing comma after **, so removed it. -amm
+        )
+
+    def assertError(self, *args, **kwargs):
+        return self._logical_test_error(
+            *args,
+            validation_type=ASSERT,
+            test_result_string=ERROR,
+            **kwargs  # pycharm complained about trailing comma after **, so removed it. -amm
+        )
+
+    expect_error = expectError
+    verify_error = verifyError
+    assert_error = assertError
+
+    ################################################################################
+    def _logical_test_fail(self, *args, **kwargs):
+        """
+        Method:
+            _logical_test_fail
+
+        Purpose:
+            Used by verify_fail, assert_fail, expected_fail to perform the requisite
+            setup and teardown to report a failed validation.
+
+        Parameters:
+            No parameters are required, but some optional, useful ones include:
+            - fatal (bool): the result should exit the test
+            - message (str): the message to use to report success
+
+        Returns:
+            - False (because after all, the test failed)
+        """
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[MESSAGE, FATAL],
+            defaults={
+                MESSAGE: '{} error'.format(kwargs[VALIDATION_TYPE]),
+                FATAL: False,
+                VALIDATION_TESTS: FAILED,
+                TEST_RESULT_STRING: FAILED
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = False
+        return self._post_process_logic(kwargs)
+
+    def expectFailed(self, *args, **kwargs):
+        return self._logical_test_error(
+            *args,
+            validation_type=EXPECT,
+            test_result_string=FAILED,
+            **kwargs  # pycharm complained about trailing comma after **, so removed it. -amm
+        )
+
+    def verifyFailed(self, *args, **kwargs):
+        return self._logical_test_error(
+            *args,
+            validation_type=VERIFY,
+            test_result_string=FAILED,
+            **kwargs  # pycharm complained about trailing comma after **, so removed it. -amm
+        )
+
+    def assertFailed(self, *args, **kwargs):
+        return self._logical_test_error(
+            *args,
+            validation_type=ASSERT,
+            test_result_string=FAILED,
+            **kwargs  # pycharm complained about trailing comma after **, so removed it. -amm
+        )
+
+    expect_failed = expectFailed
+    verify_failed = verifyFailed
+    assert_failed = assertFailed
+
+    ################################################################################
+    def _logical_test_passed(self, *args, **kwargs):
+        """
+        Method:
+            _logical_test_passed
+
+        Purpose:
+            Used by verify_passed, assert_passed, expected_passed to perform the requisite
+            setup and teardown to report a passed validation.
+
+        Parameters:
+            No parameters are required, but some optional, useful ones include:
+            - message (str) the message to use to report success
+
+        Returns:
+            - True (because after all, the test passed)
+        """
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[MESSAGE, FATAL],
+            defaults={
+                MESSAGE: '{} passed'.format(kwargs[VALIDATION_TYPE]),
+                FATAL: False,
+                VALIDATION_TESTS: PASSED,
+                TEST_RESULT_STRING: PASSED
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = True
+        return self._post_process_logic(kwargs)
+
+    def expectPassed(self, *args, **kwargs):
+        return self._logical_test_passed(
+            *args,
+            validation_type=EXPECT,
+            test_result_string=PASSED,
+            **kwargs  # pycharm complained about trailing comma after **, so removed it. -amm
+        )
+
+    def verifyPassed(self, *args, **kwargs):
+        return self._logical_test_passed(
+            *args,
+            validation_type=VERIFY,
+            test_result_string=PASSED,
+            **kwargs  # pycharm complained about trailing comma after **, so removed it. -amm
+        )
+
+    def assertPassed(self, *args, **kwargs):
+        return self._logical_test_passed(
+            *args,
+            validation_type=ASSERT,
+            test_result_string=PASSED,
+            **kwargs  # pycharm complained about trailing comma after **, so removed it. -amm
+        )
+
+    expect_passed = expectPassed
+    verify_passed = verifyPassed
+    assert_passed = assertPassed
+
+    ################################################################################
+    def _logical_test_true(self, *args, **kwargs):
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[ACTUAL_VALUE, MESSAGE],
+            defaults={
+                EXPECTED_VALUE: True,
+                ACTUAL_VALUE: None,
+                MESSAGE: None,
+                VALIDATION_TESTS: TRUE,
+            })
+
+        # this is exactly how it's implemented in unittest.testcase
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = False
+        if kwargs[ACTUAL_VALUE]:
+            kwargs[const.VALIDATION_LOGICAL_RESULT] = True
+        return self._post_process_logic(kwargs)
+
+    def expectTrue(self, *args, **kwargs):
+        return self._logical_test_true(*args, validation_type=EXPECT, **kwargs)
+
+    def verifyTrue(self, *args, **kwargs):
+        return self._logical_test_true(*args, validation_type=VERIFY, **kwargs)
+
+    def assertTrue(self, *args, **kwargs):
+        return self._logical_test_true(*args, validation_type=ASSERT, **kwargs)
+
+    expect_true = expectTrue
+    verify_true = verifyTrue
+    assert_true = assertTrue
+
+    ################################################################################
+    def _logical_test_false(self, *args, **kwargs):
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[ACTUAL_VALUE, MESSAGE],
+            defaults={
+                EXPECTED_VALUE: False,
+                ACTUAL_VALUE: None,
+                MESSAGE: None,
+                VALIDATION_TESTS: FALSE,
+            })
+
+        # this is exactly how it's implemented in unittest.testcase
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = False
+        if not kwargs[ACTUAL_VALUE]:
+            kwargs[const.VALIDATION_LOGICAL_RESULT] = True
+        return self._post_process_logic(kwargs)
+
+    def expectFalse(self, *args, **kwargs):
+        return self._logical_test_false(*args, validation_type=EXPECT, **kwargs)
+
+    def verifyFalse(self, *args, **kwargs):
+        return self._logical_test_false(*args, validation_type=VERIFY, **kwargs)
+
+    def assertFalse(self, *args, **kwargs):
+        return self._logical_test_false(*args, validation_type=ASSERT, **kwargs)
+
+    expect_false = expectFalse
+    verify_false = verifyFalse
+    assert_false = assertFalse
+
+    ################################################################################
+    def _logical_test_is(self, *args, **kwargs):
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[FIRST, SECOND, MESSAGE],
+            defaults={
+                FIRST: None,
+                SECOND: None,
+                MESSAGE: None,
+                VALIDATION_TESTS: 'is',
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = kwargs[FIRST] is kwargs[SECOND]
+        return self._post_process_logic(kwargs)
+
+    def expectIs(self, *args, **kwargs):
+        return self._logical_test_is(*args, validation_type=EXPECT, **kwargs)
+
+    def verifyIs(self, *args, **kwargs):
+        return self._logical_test_is(*args, validation_type=VERIFY, **kwargs)
+
+    def assertIs(self, *args, **kwargs):
+        return self._logical_test_is(*args, validation_type=ASSERT, **kwargs)
+
+    expect_is = expectIs
+    verify_is = verifyIs
+    assert_is = assertIs
+
+    ################################################################################
+    def _logical_test_is_not(self, *args, **kwargs):
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[FIRST, SECOND, MESSAGE],
+            defaults={
+                FIRST: None,
+                SECOND: None,
+                MESSAGE: None,
+                VALIDATION_TESTS: 'is_not',
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = kwargs[FIRST] is not kwargs[SECOND]
+        return self._post_process_logic(kwargs)
+
+    def expectIsNot(self, *args, **kwargs):
+        return self._logical_test_is_not(*args, validation_type=EXPECT, **kwargs)
+
+    def verifyIsNot(self, *args, **kwargs):
+        return self._logical_test_is_not(*args, validation_type=VERIFY, **kwargs)
+
+    def assertIsNot(self, *args, **kwargs):
+        return self._logical_test_is_not(*args, validation_type=ASSERT, **kwargs)
+
+    expect_is_not = expectIsNot
+    verify_is_not = verifyIsNot
+    assert_is_not = assertIsNot
+
+    ################################################################################
+    def _logical_test_is_none(self, *args, **kwargs):
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[ACTUAL_VALUE, MESSAGE],
+            defaults={
+                EXPECTED_VALUE: None,
+                ACTUAL_VALUE: None,
+                MESSAGE: None,
+                VALIDATION_TESTS: 'is_none'
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = kwargs[EXPECTED_VALUE] is kwargs[ACTUAL_VALUE]
+        return self._post_process_logic(kwargs)
+
+    def expectIsNone(self, *args, **kwargs):
+        return self._logical_test_is_none(*args, validation_type=EXPECT, **kwargs)
+
+    def verifyIsNone(self, *args, **kwargs):
+        return self._logical_test_is_none(*args, validation_type=VERIFY, **kwargs)
+
+    def assertIsNone(self, *args, **kwargs):
+        return self._logical_test_is_none(*args, validation_type=ASSERT, **kwargs)
+
+    expect_is_none = expectIsNone
+    verify_is_none = verifyIsNone
+    assert_is_none = assertIsNone
+
+    ################################################################################
+    def _logical_test_is_not_none(self, *args, **kwargs):
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[ACTUAL_VALUE, MESSAGE],
+            defaults={
+                ACTUAL_VALUE: "not none",
+                MESSAGE: None,
+                VALIDATION_TESTS: 'is_not_none',
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = kwargs[ACTUAL_VALUE] is not None
+        return self._post_process_logic(kwargs)
+
+    def expectIsNotNone(self, *args, **kwargs):
+        return self._logical_test_is_not_none(*args, validation_type=EXPECT, **kwargs)
+
+    def verifyIsNotNone(self, *args, **kwargs):
+        return self._logical_test_is_not_none(*args, validation_type=VERIFY, **kwargs)
+
+    def assertIsNotNone(self, *args, **kwargs):
+        return self._logical_test_is_not_none(*args, validation_type=ASSERT, **kwargs)
+
+    expect_is_not_none = expectIsNotNone
+    verify_is_not_none = verifyIsNotNone
+    assert_is_not_none = assertIsNotNone
+
+    ################################################################################
+    def _logical_test_in(self, *args, **kwargs):
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[MEMBER, CONTAINER, MESSAGE],
+            defaults={
+                MEMBER: None,
+                CONTAINER: None,
+                MESSAGE: None,
+                VALIDATION_TESTS: 'in'
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = kwargs[MEMBER] in kwargs[CONTAINER]
+        return self._post_process_logic(kwargs)
+
+    def expectIn(self, *args, **kwargs):
+        return self._logical_test_in(*args, validation_type=EXPECT, **kwargs)
+
+    def verifyIn(self, *args, **kwargs):
+        return self._logical_test_in(*args, validation_type=VERIFY, **kwargs)
+
+    def assertIn(self, *args, **kwargs):
+        return self._logical_test_in(*args, validation_type=ASSERT, **kwargs)
+
+    expect_in = expectIn
+    verify_in = verifyIn
+    assert_in = assertIn
+
+    ################################################################################
+    def _logical_test_not_in(self, *args, **kwargs):
+        self._args_to_kwargs(
+            args=args, kwargs=kwargs,
+            fields=[MEMBER, CONTAINER, MESSAGE],
+            defaults={
+                MEMBER: None,
+                CONTAINER: None,
+                MESSAGE: None,
+                VALIDATION_TESTS: 'not_in',
+            })
+
+        kwargs[const.VALIDATION_LOGICAL_RESULT] = kwargs[MEMBER] not in kwargs[CONTAINER]
+        return self._post_process_logic(kwargs)
+
+    def expectNotIn(self, *args, **kwargs):
+        return self._logical_test_not_in(*args, validation_type=EXPECT, **kwargs)
+
+    def verifyNotIn(self, *args, **kwargs):
+        return self._logical_test_not_in(*args, validation_type=VERIFY, **kwargs)
+
+    def assertNotIn(self, *args, **kwargs):
+        return self._logical_test_not_in(*args, validation_type=ASSERT, **kwargs)
+
+    expect_not_in = expectNotIn
+    verify_not_in = verifyNotIn
+    assert_not_in = assertNotIn
