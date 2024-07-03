@@ -312,6 +312,7 @@ class SWADLBase(object):
         return reporting_dict[ARGS][0] == reporting_dict[ARGS][1]
 
     def assertEqual(self, *args, **kwargs):
+        # Description: records assertion failure if not equal
         return self.assertion_post_processor(
             argsfields=['x', 'y'],
             message='{x} and {y} should be equal',
@@ -320,6 +321,7 @@ class SWADLBase(object):
             kwargs=kwargs,
         )
     def requireEqual(self, *args, **kwargs):
+        # Description: records error if not equal
         return self.assertion_post_processor(
             argsfields=['x', 'y'],
             message='{x} and {y} should be equal',
@@ -328,6 +330,8 @@ class SWADLBase(object):
             kwargs=kwargs,
         )
     def expectEqual(self, *args, **kwargs):
+        # Description: records warning if not equal
+
         return self.assertion_post_processor(
             argsfields=['x', 'y'],
             message='{x} and {y} should NOT be equal',
