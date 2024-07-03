@@ -6,8 +6,6 @@ Purpose: Master global configuration dictionary
 import logging
 from SWADL.engine.swadl_dict import SWADLDict
 
-logger = logging.getLogger(__name__)
-
 
 class ConfigDict(SWADLDict):
     # Purpose: To provide a singleton for configuration information.

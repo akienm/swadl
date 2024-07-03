@@ -3,14 +3,53 @@
 import datetime
 import gc
 import inspect
+import logging
 import time
+import traceback
 
 from SWADL.engine import bannerizer
 from SWADL.engine.swadl_cfg import cfgdict
-from SWADL.engine.swadl_constants import DRIVER, TEST_DATA, ID
+from SWADL.engine.swadl_constants import ARGS
+from SWADL.engine.swadl_constants import ARGSCOUNT
+from SWADL.engine.swadl_constants import ARGSCOUNT_OK
+from SWADL.engine.swadl_constants import ARGSFIELDS
+from SWADL.engine.swadl_constants import ASSERT
+from SWADL.engine.swadl_constants import CONTAINER
+from SWADL.engine.swadl_constants import DIVIDER
+from SWADL.engine.swadl_constants import DRIVER
+from SWADL.engine.swadl_constants import EXPECT
+from SWADL.engine.swadl_constants import EXPER
+from SWADL.engine.swadl_constants import EXPER1
+from SWADL.engine.swadl_constants import EXPER2
+from SWADL.engine.swadl_constants import FAILED
+from SWADL.engine.swadl_constants import FATAL
+from SWADL.engine.swadl_constants import HELPER
+from SWADL.engine.swadl_constants import ID
+from SWADL.engine.swadl_constants import KWARGS
+from SWADL.engine.swadl_constants import LOGICAL_RESULT
+from SWADL.engine.swadl_constants import MEMBER
+from SWADL.engine.swadl_constants import MESSAGE
+from SWADL.engine.swadl_constants import OBJ
+from SWADL.engine.swadl_constants import PASSED
+from SWADL.engine.swadl_constants import REPORTING_DICT
+from SWADL.engine.swadl_constants import REQUIRE
+from SWADL.engine.swadl_constants import RESULT
+from SWADL.engine.swadl_constants import SELF__DICT__
+from SWADL.engine.swadl_constants import STACKTRACE
 from SWADL.engine.swadl_constants import SUBSTITUTION_SOURCES
+from SWADL.engine.swadl_constants import TEST_DATA
 from SWADL.engine.swadl_constants import TEST_NAME
+from SWADL.engine.swadl_constants import TEST_OBJECT
 from SWADL.engine.swadl_constants import TIMEOUT
+from SWADL.engine.swadl_constants import TIME_FINISHED
+from SWADL.engine.swadl_constants import TIME_STARTED
+from SWADL.engine.swadl_constants import TITLE
+from SWADL.engine.swadl_constants import TRACEBACK_SPACES
+from SWADL.engine.swadl_constants import X
+from SWADL.engine.swadl_constants import Y
+from SWADL.engine.swadl_dict import SWADLDict
+from SWADL.engine.swadl_exceptions import FrameworkError
+from SWADL.engine.swadl_constants import VALIDATIONS
 
 
 class SWADLBase(object):
@@ -101,6 +140,16 @@ class SWADLBase(object):
             parent_name = ""
 
         return f"{test_name}{parent_name}{self.name}"
+
+    _logger = None
+    @property
+    def log(self):
+        # Purpose: To provide access to logs everywhere without another import
+        # returns a logger instance
+        # usage: self.log.debug('foo')
+        if not self.__class__._logger:
+            self.__class__._logger = logging.getLogger(__name__)
+        return self.__class__._logger
 
     @classmethod
     def get_timestamp(cls, time=None):
@@ -217,3 +266,400 @@ class SWADLBase(object):
             end_time = time_now + minimum
         return end_time - time_now
 
+    #######################################################################
+    #######################################################################
+    def _process_stack_trace(self, exc_info=None):
+        # Purpose: Standardizes the traceback information
+        # Parameters: exc_info (list of string) the traceback info to process
+        # Returns: the normalized list
+        # Usage: exc_info = process_stack_trace(exc_info)
+        # sometimes we have a trailing blank line or two
+        #import pdb ; pdb.set_trace()
+        exc_info = exc_info if exc_info else traceback.format_stack()
+        while exc_info[-1].strip() == '':
+            del (exc_info[-1])
+
+        # now we're going to chop off all the nose2 traceback entries
+        line_added = False
+        recording = False
+        result = [DIVIDER + 'test part:']
+        for exc_item in exc_info:
+
+            # break this up into lines
+            interim_value = [exc_item.replace('\n', '')]
+
+            # see if we should start reporting yet or not
+            if 'Project\demos' in exc_item and recording is False:
+                # as soon as 'Project/demos' appears, we want to capture
+                # all of the remaining entries
+                recording = True
+
+            # and if we've already started recording the lines
+            if recording:
+                # the 'spaces' appear before the file name, and before the
+                # 'code' line.
+                if TRACEBACK_SPACES in interim_value[0]:
+                    interim_value = interim_value[0].split(TRACEBACK_SPACES)
+                    interim_value[1] = TRACEBACK_SPACES + interim_value[1]
+
+                # finally, go thru the "sub-lines" and add them to the result
+                for item in interim_value:
+                    # check for blank lines and give those a miss
+                    if not line_added and 'SWADL\engine' in item:
+                        line_added = True
+                        result.append(DIVIDER + 'framework part:')
+                    if len(item.strip()) > 0:
+                        result.append(item)
+
+        if result:
+            result.append(DIVIDER + 'error part:')
+        return result
+
+    def _make_framework_error(self, message=None, reporting_dict=None):
+        # Purpose: Produces a FrameworkError with the passed data
+        framework_error = FrameworkError(
+            self.bannerize(
+                {
+                    "FrameworkError": {
+                        MESSAGE: message,
+                        REPORTING_DICT: reporting_dict,
+                        SELF__DICT__: self.__dict__,
+                    }
+                }
+            )
+        )
+        return framework_error
+
+    def _assertion_post_processor(self,
+                                  argsfields=None,
+                                  message=None,
+                                  helper=None,
+                                  args=None,
+                                  kwargs=None,
+                                  ):
+        # Purpose; Takes information provided by the caller about the
+        # kind of assertion/error/warning, and completes the test,
+        # recording and logging steps.
+        reporting_dict = SWADLDict()
+        reporting_dict[TITLE] = 'SWADL Validation'
+        self.test_data[f'VALIDATION at {self.get_timestamp()}'] = reporting_dict
+        # now assume each group will have a group processor
+        # we want the method name that called that, not our
+        # direct caller. Hence the [2] in the lione below
+        reporting_dict[ID] = inspect.stack()[2][0].f_code.co_name
+        reporting_dict[MESSAGE] = message
+        reporting_dict[ARGSFIELDS] = argsfields
+        reporting_dict[ARGS] = args
+        reporting_dict[KWARGS] = kwargs
+        
+        reporting_dict[HELPER] = helper
+        reporting_dict[LOGICAL_RESULT] = False  # overwritten later we hope :)
+        reporting_dict[RESULT] = "Failed to complete"  # overwritten later we hope :)
+        reporting_dict[SELF__DICT__] = self.__dict__
+        reporting_dict[TIME_STARTED] = time.time()
+        reporting_dict[TIME_FINISHED] = time.time()
+
+        # rebuild args from kwargs
+        # first, copy the args to the kwargs by field name, if any were specified
+        for index in range(0, len(reporting_dict[ARGS])):
+            kwargs[reporting_dict[ARGSFIELDS][index]] = reporting_dict[ARGS][index]
+        # now test whether all are present
+        args_found_by_name = []
+        for index in range(0, len(reporting_dict[ARGSFIELDS])):
+            field_name = reporting_dict[ARGSFIELDS][index]
+            if field_name in reporting_dict[KWARGS]:
+                args_found_by_name.append(field_name)
+            else:
+                raise self._make_framework_error(
+                    message=f"failed because missing arg: {field_name}",
+                    reporting_dict=reporting_dict,
+                )
+        reporting_dict[ARGSCOUNT] = len(args_found_by_name)
+        reporting_dict[ARGSCOUNT_OK] = reporting_dict[ARGSCOUNT] >= len(reporting_dict[ARGSFIELDS])
+        if not reporting_dict[ARGSCOUNT_OK]:
+            reporting_dict[STACKTRACE] = self._process_stack_trace(traceback.format_stack())
+            raise self._make_framework_error(
+                message="failed because not passed enough args",
+                reporting_dict=reporting_dict,
+            )
+
+        reporting_dict[LOGICAL_RESULT] = reporting_dict[HELPER](reporting_dict)
+        reporting_dict[TIME_FINISHED] = time.time()
+
+        if reporting_dict[LOGICAL_RESULT]:
+            reporting_dict[RESULT] = PASSED
+        else:
+            reporting_dict[RESULT] = FAILED
+            self.test_data[TEST_OBJECT].accumulated_failures.append(reporting_dict)
+
+        if reporting_dict[ID].upper().startswith(ASSERT):
+            reporting_dict[STACKTRACE] = self._process_stack_trace(traceback.format_stack())
+            message = self.bannerize(reporting_dict)
+            self.log.critical(message)
+            if reporting_dict[KWARGS].get(FATAL, False):
+                raise AssertionError(message)
+        elif reporting_dict[ID].upper().startswith(REQUIRE):
+            reporting_dict[STACKTRACE] = self._process_stack_trace(traceback.format_stack())
+            message = self.bannerize(reporting_dict)
+            self.log.error(message)
+            if reporting_dict[KWARGS].get(FATAL, False):
+                raise Exception(message)
+        elif reporting_dict[ID].upper().startswith(EXPECT):
+            message = self.bannerize(reporting_dict)
+            self.log.warning(message)
+
+        return reporting_dict[LOGICAL_RESULT]
+
+    ################################################################################
+
+    def _logical_test_equal(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return reporting_dict[KWARGS][X] == reporting_dict[KWARGS][Y]
+
+    def _test_equal_common(self, args, kwargs):
+        # Purpose: to get all the data passed to the post processor
+        return self._assertion_post_processor(
+            argsfields=[X, Y],
+            message='{x} and {y} should be equal',
+            helper=self._logical_test_equal,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_equal(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_equal_common(args, kwargs)
+
+    def require_equal(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_equal_common(args, kwargs)
+
+    def expect_equal(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_equal_common(args, kwargs)
+
+    ################################################################################
+    def _logical_test_not_equal(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return not (reporting_dict[KWARGS][X] == reporting_dict[KWARGS][Y])
+
+    def _test_not_equal_common(self, args, kwargs):
+        # Purpose: to get all the data passed to the post processor
+        return self._assertion_post_processor(
+            argsfields=[X, Y],
+            message='{x} and {y} should NOT be equal',
+            helper=self._logical_test_not_equal,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_not_equal(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_not_equal_common(args, kwargs)
+
+    def require_not_equal(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_not_equal_common(args, kwargs)
+
+    def expect_not_equal(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_not_equal_common(args, kwargs)
+
+    ################################################################################
+    def _logical_test_true(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return True if reporting_dict[KWARGS][EXPER] else False
+
+    def _test_true_common(self, args, kwargs):
+        # Purpose: to get all the data passed to the post processor
+        return self._assertion_post_processor(
+            argsfields=[EXPER],
+            message='{exper} should evaluate to True',
+            helper=self._logical_test_true,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_true(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_true_common(args, kwargs)
+
+    def require_true(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_true_common(args, kwargs)
+
+    def expect_true(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_true_common(args, kwargs)
+
+    ################################################################################
+    def _logical_test_false(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return True if reporting_dict[KWARGS][EXPER] is False else False
+
+    def _test_False_common(self, args, kwargs):
+        return self._assertion_post_processor(
+            argsfields=[EXPER],
+            message='{exper} should evaluate to False',
+            helper=self._logical_test_false,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_false(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_False_common(args, kwargs)
+    def require_false(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_False_common(args, kwargs)
+    def expect_false(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_False_common(args, kwargs)
+
+    ################################################################################
+    def _logical_test_is(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return reporting_dict[KWARGS][EXPER1] is reporting_dict[KWARGS][EXPER2]
+
+    def _test_is_common(self, args, kwargs):
+        return self._assertion_post_processor(
+            argsfields=[EXPER1, EXPER2],
+            message='{exper1} is {exper2} should evaluate to True',
+            helper=self._logical_test_is,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_is(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_is_common(args, kwargs)
+    def require_is(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_is_common(args, kwargs)
+    def expect_is(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_is_common(args, kwargs)
+
+    ################################################################################
+    def _logical_test_is_not(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return reporting_dict[KWARGS][EXPER1] is not reporting_dict[KWARGS][EXPER2]
+
+    def _test_is_not_common(self, args, kwargs):
+        return self._assertion_post_processor(
+            argsfields=[EXPER1, EXPER2],
+            message='{exper1} is not {exper2} should evaluate to True',
+            helper=self._logical_test_is_not,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_is_not(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_is_not_common(args, kwargs)
+    def require_is_not(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_is_not_common(args, kwargs)
+    def expect_is_not(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_is_not_common(args, kwargs)
+
+    ################################################################################
+    def _logical_test_is_none(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return reporting_dict[KWARGS][OBJ] is None
+
+    def _test_is_none_common(self, args, kwargs):
+        return self._assertion_post_processor(
+            argsfields=[OBJ],
+            message='{obj} is None',
+            helper=self._logical_test_is_none,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_is_none(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_is_none_common(args, kwargs)
+    def require_is_none(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_is_none_common(args, kwargs)
+    def expect_is_none(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_is_none_common(args, kwargs)
+
+    ################################################################################
+    def _logical_test_is_not_none(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return reporting_dict[KWARGS][OBJ] is not None
+
+    def _test_is_not_none_common(self, args, kwargs):
+        return self._assertion_post_processor(
+            argsfields=[OBJ],
+            message='{obj} is not None',
+            helper=self._logical_test_is_not_none,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_is_not_none(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_is_not_none_common(args, kwargs)
+    def require_is_not_none(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_is_not_none_common(args, kwargs)
+    def expect_is_not_none(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_is_not_none_common(args, kwargs)
+
+    ################################################################################
+    def _logical_test_in(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return reporting_dict[KWARGS][MEMBER] in reporting_dict[KWARGS][CONTAINER]
+
+    def _test_in_common(self, args, kwargs):
+        return self._assertion_post_processor(
+            argsfields=[MEMBER, CONTAINER],
+            message='{member} is in {container}',
+            helper=self._logical_test_in,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_in(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_in_common(args, kwargs)
+
+    def require_in(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_in_common(args, kwargs)
+
+    def expect_in(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_in_common(args, kwargs)
+
+    ################################################################################
+    def _logical_test_not_in(self, reporting_dict=None):
+        # Purpose: performs the actual comparison
+        return reporting_dict[KWARGS][MEMBER] not in reporting_dict[KWARGS][CONTAINER]
+
+    def _test_not_in_common(self, args, kwargs):
+        return self._assertion_post_processor(
+            argsfields=[MEMBER, CONTAINER],
+            message='{member} is in {container}',
+            helper=self._logical_test_not_in,
+            args=args,
+            kwargs=kwargs,
+        )
+
+    def assert_not_in(self, *args, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_not_in_common(args, kwargs)
+
+    def require_not_in(self, *args, **kwargs):
+        # Description: records error if condition not met
+        return self._test_not_in_common(args, kwargs)
+
+    def expect_not_in(self, *args, **kwargs):
+        # Description: records warning if condition not met
+        return self._test_not_in_common(args, kwargs)

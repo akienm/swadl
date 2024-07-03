@@ -9,15 +9,16 @@ from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 
 from SWADL.engine.swadl_base import SWADLBase
+from SWADL.engine.swadl_cfg import cfgdict
 from SWADL.engine.swadl_constants import CACHE
 from SWADL.engine.swadl_constants import CLICK
-from SWADL.engine.swadl_cfg import cfgdict
 from SWADL.engine.swadl_constants import ENABLED
 from SWADL.engine.swadl_constants import EXIST
 from SWADL.engine.swadl_constants import FAILURE_LOG
 from SWADL.engine.swadl_constants import RESULT_LOG
 from SWADL.engine.swadl_constants import SELENIUM_CONTROL_DEFAULT_TIMEOUT
 from SWADL.engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
+from SWADL.engine.swadl_constants import TEST_OBJECT
 from SWADL.engine.swadl_constants import UNIQUE
 from SWADL.engine.swadl_constants import VALIDATE_CLICK
 from SWADL.engine.swadl_constants import VALIDATE_ENABLED
@@ -30,12 +31,7 @@ from SWADL.engine.swadl_constants import VALUE
 from SWADL.engine.swadl_constants import VISIBLE
 from SWADL.engine.swadl_dict import SWADLDict
 from SWADL.engine.swadl_output import Output
-
-logger = logging.getLogger(__name__)
-
-# Datum: accumulated_failures
-# Purpose: All failed control validations
-accumulated_failures = []
+from SWADL.engine.swadl_constants import VALIDATIONS
 
 
 class SWADLControl(SWADLBase):
@@ -587,12 +583,13 @@ class SWADLControl(SWADLBase):
             message_dict['comments'] = comments
             message = self.bannerize(data=message_dict, title="SWADL Validation Result")
             cfgdict[RESULT_LOG].add(message)
+            self.test_data[f'VALIDATION at {self.get_timestamp()}'] = message_dict
             if result:
-                logger.info(message)
+                self.log.debug(message)
             else:
-                logger.critical(message)
+                self.log.critical(message)
                 cfgdict[FAILURE_LOG].add(message)
-                accumulated_failures.append(message)
+                cfgdict[TEST_OBJECT].accumulated_failures.append(message)
             print(message)
             was_not_fatal = not (result is False and fatal is True)
             assert was_not_fatal, f"A fatal error occurred. {message}"

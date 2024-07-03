@@ -9,8 +9,6 @@ from SWADL.engine.swadl_control import SWADLControl
 from SWADL.engine.swadl_base_section import SWADLPageSection
 from Project.flows.google_search_constants import SEARCH_RESULT_TITLES
 
-logger = logging.getLogger(__name__)
-
 
 class GoogleResultSection(SWADLPageSection):
     # Purpose: Google search page, for framework unit tests

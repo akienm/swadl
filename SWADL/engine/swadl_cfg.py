@@ -9,6 +9,7 @@ from SWADL.engine.swadl_constants import SELENIUM_BROWSER_OPTIONS, SELENIUM_BROW
     SELENIUM_BROWSER, SELENIUM_CONTROL_DEFAULT_TIMEOUT, SELENIUM_PAGE_DEFAULT_TIMEOUT, SELENIUM_TEST_SET_FILE, \
     SWADLTEST_URL, SWADLTEST_VERBOSE, DRIVER, ID, CONFIG_DICT
 from SWADL.engine.swadl_constants import TEST_DATA
+from SWADL.engine.swadl_constants import VALIDATIONS
 from SWADL.engine.swadl_dict import SWADLDict
 
 # Section: cfgdict
@@ -41,7 +42,6 @@ for key in TEST_PARAMETERS:
 # Purpose: creates the vehicle by which all other parts communicate
 cfgdict[TEST_DATA] = SWADLDict()
 cfgdict[TEST_DATA][ID] = TEST_DATA
-
 
 # Section: test_set
 # Purpose: Read from a .test_set file if one is specified. Overrides values in cfgdict

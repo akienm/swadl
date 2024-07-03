@@ -55,9 +55,16 @@ class SWADLPageSection(SWADLBase):
     # Purpose: In the instance, may contain the url for this page section.
     # Users: open()
 
-    def __init__(self, *args, test_data=None, name=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         # Purpose: Set the name based on the class
-        kwargs[NAME] = name if name else self.__class__.__name__
+        # IMPORTANT: ON THE SECTION INSTANCE, OVERRIDE THE KEYWORD DEFAULT
+        # FOR NAME WITH THE NAME OF THE SECTION. THAT MAKES ALL OF THIS MUCH SIMPLER.
+        # Like so:
+        #    class GoogleSearchSection(SWADLPageSection):
+        #        def __init__(self, name="GoogleSearchSection", **kwargs):
+        #            blah blah blah
+        if NAME not in kwargs:
+            kwargs[NAME] = self.__class__.__name__
         super().__init__(*args, **kwargs)
 
     def load_page(self, url=None, timeout=cfgdict[SELENIUM_PAGE_DEFAULT_TIMEOUT]):
@@ -67,7 +74,7 @@ class SWADLPageSection(SWADLBase):
             assert url, "Unable to Section.open() with the url of 'None'."
             self.driver.get(url)
         else:
-            logger.debug(
+            self.log.debug(
                 f"SWADL.{self.get_name()}.load_page() asked to load page already loaded for "
                 f"{self.url}"
             )
