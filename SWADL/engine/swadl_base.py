@@ -49,7 +49,6 @@ from SWADL.engine.swadl_constants import X
 from SWADL.engine.swadl_constants import Y
 from SWADL.engine.swadl_dict import SWADLDict
 from SWADL.engine.swadl_exceptions import FrameworkError
-from SWADL.engine.swadl_constants import VALIDATIONS
 
 
 class SWADLBase(object):
@@ -341,7 +340,7 @@ class SWADLBase(object):
         # kind of assertion/error/warning, and completes the test,
         # recording and logging steps.
         reporting_dict = SWADLDict()
-        reporting_dict[TITLE] = 'SWADL Validation'
+        reporting_dict[TITLE] = 'SWADL:Assertion'
         self.test_data[f'VALIDATION at {self.get_timestamp()}'] = reporting_dict
         # now assume each group will have a group processor
         # we want the method name that called that, not our
@@ -509,9 +508,11 @@ class SWADLBase(object):
     def assert_false(self, *args, **kwargs):
         # Description: records assertion failure if condition not met
         return self._test_False_common(args, kwargs)
+
     def require_false(self, *args, **kwargs):
         # Description: records error if condition not met
         return self._test_False_common(args, kwargs)
+
     def expect_false(self, *args, **kwargs):
         # Description: records warning if condition not met
         return self._test_False_common(args, kwargs)
@@ -533,9 +534,11 @@ class SWADLBase(object):
     def assert_is(self, *args, **kwargs):
         # Description: records assertion failure if condition not met
         return self._test_is_common(args, kwargs)
+
     def require_is(self, *args, **kwargs):
         # Description: records error if condition not met
         return self._test_is_common(args, kwargs)
+
     def expect_is(self, *args, **kwargs):
         # Description: records warning if condition not met
         return self._test_is_common(args, kwargs)
@@ -557,9 +560,11 @@ class SWADLBase(object):
     def assert_is_not(self, *args, **kwargs):
         # Description: records assertion failure if condition not met
         return self._test_is_not_common(args, kwargs)
+
     def require_is_not(self, *args, **kwargs):
         # Description: records error if condition not met
         return self._test_is_not_common(args, kwargs)
+
     def expect_is_not(self, *args, **kwargs):
         # Description: records warning if condition not met
         return self._test_is_not_common(args, kwargs)
@@ -581,9 +586,11 @@ class SWADLBase(object):
     def assert_is_none(self, *args, **kwargs):
         # Description: records assertion failure if condition not met
         return self._test_is_none_common(args, kwargs)
+
     def require_is_none(self, *args, **kwargs):
         # Description: records error if condition not met
         return self._test_is_none_common(args, kwargs)
+
     def expect_is_none(self, *args, **kwargs):
         # Description: records warning if condition not met
         return self._test_is_none_common(args, kwargs)
@@ -605,9 +612,11 @@ class SWADLBase(object):
     def assert_is_not_none(self, *args, **kwargs):
         # Description: records assertion failure if condition not met
         return self._test_is_not_none_common(args, kwargs)
+
     def require_is_not_none(self, *args, **kwargs):
         # Description: records error if condition not met
         return self._test_is_not_none_common(args, kwargs)
+
     def expect_is_not_none(self, *args, **kwargs):
         # Description: records warning if condition not met
         return self._test_is_not_none_common(args, kwargs)
