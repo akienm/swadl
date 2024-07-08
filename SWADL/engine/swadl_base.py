@@ -8,6 +8,7 @@ import time
 import traceback
 
 from SWADL.engine import bannerizer
+from SWADL.engine.bannerizer import bannerize
 from SWADL.engine.swadl_cfg import cfgdict
 from SWADL.engine.swadl_constants import ARGS
 from SWADL.engine.swadl_constants import ARGSCOUNT
@@ -45,6 +46,7 @@ from SWADL.engine.swadl_constants import TIME_FINISHED
 from SWADL.engine.swadl_constants import TIME_STARTED
 from SWADL.engine.swadl_constants import TITLE
 from SWADL.engine.swadl_constants import TRACEBACK_SPACES
+from SWADL.engine.swadl_constants import VALIDATION_MC
 from SWADL.engine.swadl_constants import X
 from SWADL.engine.swadl_constants import Y
 from SWADL.engine.swadl_dict import SWADLDict
@@ -64,6 +66,7 @@ class SWADLBase(object):
 
     name = None
 
+    #######################################################################
     def __init__(self, name=None, substitution_sources=None, **kwargs):
         # Purpose: Initilizes the instance, appies unused kwargs
         # Inputs: - name - The name of this object. Used for reporting. REQUIRED!
@@ -102,6 +105,7 @@ class SWADLBase(object):
         base = super().__str__()
         return f'{base}/{self.get_name()}'
 
+    #######################################################################
     def apply_kwargs(self, kwargs):
         # Purpose: Makes otherwise unused kwargs pairs into members of `self`
         # Inputs: (dict)kwargs: dictionary who's values we want to add
@@ -122,23 +126,7 @@ class SWADLBase(object):
         result = self.bannerize(data=self.__dict__, title=self.get_name())
         print(result)
         return result
-
-    def get_name(self):
-        # Purpose: Returns the name of the thing
-        # Notes: If self.parent is not None, prefixes the name with the parent's name
-        # the names get used all over to identify the object we're reporting on
-        test_name = cfgdict.get(TEST_NAME, '')
-        if test_name:
-            if self.name != test_name:
-                test_name = f"{test_name}/"
-            else:
-                test_name = ""
-        if hasattr(self, 'parent') and self.parent:
-            parent_name = f"{self.parent.name}."
-        else:
-            parent_name = ""
-
-        return f"{test_name}{parent_name}{self.name}"
+    #######################################################################
 
     _logger = None
     @property
@@ -159,6 +147,7 @@ class SWADLBase(object):
             time = datetime.datetime.now()
         return time.strftime("%Y%m%d_%H%M%S.%f")
 
+    #######################################################################
     class _SafeDict(dict):
         # Purpose: Fills in f-string style braced arguments from keys in the
         #          dictionaries copied to cfgdict[SUBSTITUTION_SOURCES]
@@ -198,6 +187,24 @@ class SWADLBase(object):
             before = result
         return result
 
+    #######################################################################
+    def get_name(self):
+        # Purpose: Returns the name of the thing
+        # Notes: If self.parent is not None, prefixes the name with the parent's name
+        # the names get used all over to identify the object we're reporting on
+        test_name = cfgdict.get(TEST_NAME, '')
+        if test_name:
+            if self.name != test_name:
+                test_name = f"{test_name}/"
+            else:
+                test_name = ""
+        if hasattr(self, 'parent') and self.parent:
+            parent_name = f"{self.parent.name}."
+        else:
+            parent_name = ""
+
+        return f"{test_name}{parent_name}{self.name}"
+
     def _get_method_name(self):
         # Purpose: Get the name of the calling method
         test_name = cfgdict[TEST_NAME]
@@ -230,6 +237,7 @@ class SWADLBase(object):
             result = ['unknown instance']
         return result
 
+    #######################################################################
     def _remove_keys(self, incoming_dict, list_of_keys=None):
         # Purpose: Remove keys from kwargs before passing them on. For instance, most webdriver
         #          calls do not accept timeout as a keyword.
@@ -266,14 +274,12 @@ class SWADLBase(object):
         return end_time - time_now
 
     #######################################################################
-    #######################################################################
     def _process_stack_trace(self, exc_info=None):
         # Purpose: Standardizes the traceback information
         # Parameters: exc_info (list of string) the traceback info to process
         # Returns: the normalized list
         # Usage: exc_info = process_stack_trace(exc_info)
         # sometimes we have a trailing blank line or two
-        #import pdb ; pdb.set_trace()
         exc_info = exc_info if exc_info else traceback.format_stack()
         while exc_info[-1].strip() == '':
             del (exc_info[-1])
@@ -339,13 +345,20 @@ class SWADLBase(object):
         # Purpose; Takes information provided by the caller about the
         # kind of assertion/error/warning, and completes the test,
         # recording and logging steps.
+        caller = inspect.stack()[2][0].f_code.co_name
         reporting_dict = SWADLDict()
-        reporting_dict[TITLE] = 'SWADL:Assertion'
-        self.test_data[f'VALIDATION at {self.get_timestamp()}'] = reporting_dict
+        reporting_dict[ID] = (
+            f'SWADL:Validation:'
+            f'{self.get_name()}'
+            f'.{caller}'
+            f' at {self.get_timestamp()} '
+            f' with OID {id(reporting_dict)}'
+        )
+        self.test_data[reporting_dict[ID]] = reporting_dict
         # now assume each group will have a group processor
         # we want the method name that called that, not our
         # direct caller. Hence the [2] in the lione below
-        reporting_dict[ID] = inspect.stack()[2][0].f_code.co_name
+        reporting_dict[VALIDATION_MC] = caller
         reporting_dict[MESSAGE] = message
         reporting_dict[ARGSFIELDS] = argsfields
         reporting_dict[ARGS] = args
@@ -389,6 +402,7 @@ class SWADLBase(object):
             reporting_dict[RESULT] = PASSED
         else:
             reporting_dict[RESULT] = FAILED
+            print(self.bannerize(reporting_dict))
             self.test_data[TEST_OBJECT].accumulated_failures.append(reporting_dict)
 
         if reporting_dict[ID].upper().startswith(ASSERT):

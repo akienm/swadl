@@ -39,7 +39,7 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         # Things that swadl needs tests to have
         self.parent = None  # because tests don't need one
         self.test_data[TEST_OBJECT] = self
-
+        self.accumulated_failures = []
 
         # and now, if all of that passed, let's initialize the csv output
         # TODO: Move this to a new module that will handle reporting

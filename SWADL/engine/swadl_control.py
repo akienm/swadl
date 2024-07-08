@@ -105,9 +105,9 @@ class SWADLControl(SWADLBase):
             - VALIDATE_VISIBLE (bool/None) if a value is specified, the validate() call will attempt
               to validate that the control's state matches the boolean value
         """
+        super().__init__(**kwargs)
         self.require_in(member=SELECTOR, container=kwargs, fatal=True)
         self.validation = None
-        super().__init__(**kwargs)
         self.clear_cached_status()
         self.mater_validation_table = {
             VALIDATE_ENABLED: self.validate_enabled,
