@@ -16,6 +16,7 @@ from SWADL.engine.swadl_constants import ENABLED
 from SWADL.engine.swadl_constants import EXIST
 from SWADL.engine.swadl_constants import FAILURE_LOG
 from SWADL.engine.swadl_constants import RESULT_LOG
+from SWADL.engine.swadl_constants import SELECTOR
 from SWADL.engine.swadl_constants import SELENIUM_CONTROL_DEFAULT_TIMEOUT
 from SWADL.engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
 from SWADL.engine.swadl_constants import TEST_OBJECT
@@ -31,7 +32,6 @@ from SWADL.engine.swadl_constants import VALUE
 from SWADL.engine.swadl_constants import VISIBLE
 from SWADL.engine.swadl_dict import SWADLDict
 from SWADL.engine.swadl_output import Output
-from SWADL.engine.swadl_constants import VALIDATIONS
 
 
 class SWADLControl(SWADLBase):
@@ -105,9 +105,9 @@ class SWADLControl(SWADLBase):
             - VALIDATE_VISIBLE (bool/None) if a value is specified, the validate() call will attempt
               to validate that the control's state matches the boolean value
         """
-        assert 'selector' in kwargs, "Controls must have a selector property at instantiation"
-        self.validation = None
         super().__init__(**kwargs)
+        self.require_in(member=SELECTOR, container=kwargs, fatal=True)
+        self.validation = None
         self.clear_cached_status()
         self.mater_validation_table = {
             VALIDATE_ENABLED: self.validate_enabled,
@@ -568,7 +568,6 @@ class SWADLControl(SWADLBase):
             else:
                 report_me = ''
             message_dict = SWADLDict()
-            message_dict = SWADLDict()
             message_dict['result'] = "PASSED" if result else "FAILED"
             message_dict['for control'] = self.get_name()
             message_dict['with selector'] = self.selector
@@ -583,14 +582,19 @@ class SWADLControl(SWADLBase):
             message_dict['comments'] = comments
             message = self.bannerize(data=message_dict, title="SWADL Validation Result")
             cfgdict[RESULT_LOG].add(message)
-            self.test_data[f'VALIDATION at {self.get_timestamp()}'] = message_dict
+            entry_name = (
+                f'SWADL:Validation:{self.get_name()}'
+                f'.{validation_name} '
+                f'at {self.get_timestamp()}'
+            )
+            self.test_data[entry_name] = message_dict
             if result:
                 self.log.debug(message)
             else:
                 self.log.critical(message)
                 cfgdict[FAILURE_LOG].add(message)
                 cfgdict[TEST_OBJECT].accumulated_failures.append(message)
-            print(message)
+            # print(message)
             was_not_fatal = not (result is False and fatal is True)
             assert was_not_fatal, f"A fatal error occurred. {message}"
 
