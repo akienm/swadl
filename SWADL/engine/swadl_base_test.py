@@ -39,6 +39,7 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         # Things that swadl needs tests to have
         self.parent = None  # because tests don't need one
         self.test_data[TEST_OBJECT] = self
+        cfgdict[TEST_OBJECT] = self
         self.accumulated_failures = []
 
         # and now, if all of that passed, let's initialize the csv output
@@ -65,5 +66,5 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         cfgdict[FAILURE_LOG].close(f"for {self.get_name()}")
         cfgdict[RESULT_LOG].close(f"for {self.get_name()}")
         super().tearDown()
-        print(self.bannerize(data=self.__dict__, title='test object'))
-        assert not self.accumulated_failures, pformat(self.accumulated_failures)
+        self.log.debug(self.bannerize(data=self.cfgdict))
+        self.assert_true(exper=len(self.accumulated_failures) == 0)

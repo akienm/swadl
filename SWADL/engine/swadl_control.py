@@ -568,7 +568,6 @@ class SWADLControl(SWADLBase):
             else:
                 report_me = ''
             message_dict = SWADLDict()
-            message_dict = SWADLDict()
             message_dict['result'] = "PASSED" if result else "FAILED"
             message_dict['for control'] = self.get_name()
             message_dict['with selector'] = self.selector
@@ -583,14 +582,19 @@ class SWADLControl(SWADLBase):
             message_dict['comments'] = comments
             message = self.bannerize(data=message_dict, title="SWADL Validation Result")
             cfgdict[RESULT_LOG].add(message)
-            self.test_data[f'VALIDATION at {self.get_timestamp()}'] = message_dict
+            entry_name = (
+                f'SWADL:Validation:{self.get_name()}'
+                f'.{validation_name} '
+                f'at {self.get_timestamp()}'
+            )
+            self.test_data[entry_name] = message_dict
             if result:
                 self.log.debug(message)
             else:
                 self.log.critical(message)
                 cfgdict[FAILURE_LOG].add(message)
                 cfgdict[TEST_OBJECT].accumulated_failures.append(message)
-            print(message)
+            # print(message)
             was_not_fatal = not (result is False and fatal is True)
             assert was_not_fatal, f"A fatal error occurred. {message}"
 

@@ -32,8 +32,8 @@ goto done
 cd %SWADL_HOME%
 cd Project\demos
 if %1.==p. (
-    runatest pytest google_unit_tests.py %1 %2 %3 %4 %5 %6 %7 %8 %9
+    runatest pytest --log=debug google_unit_tests.py %1 %2 %3 %4 %5 %6 %7 %8 %9
 ) else (
-    runatest nose2 google_unit_tests %1 %2 %3 %4 %5 %6 %7 %8 %9
+    runatest nose2 --log=debug google_unit_tests %1 %2 %3 %4 %5 %6 %7 %8 %9
 )
 :done
