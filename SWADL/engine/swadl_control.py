@@ -109,7 +109,7 @@ class SWADLControl(SWADLBase):
         self.validation = None
         super().__init__(**kwargs)
         self.clear_cached_status()
-        self.mater_validation_table = {
+        self.master_validation_table = {
             VALIDATE_ENABLED: self.validate_enabled,
             VALIDATE_EXIST: self.validate_exist,
             VALIDATE_TEXT: self.validate_text,
@@ -452,7 +452,7 @@ class SWADLControl(SWADLBase):
         for item in vaildation:
             time_remaining = end_time - time.time()
             time_remaining = time_remaining if time_remaining > 0 else 1
-            validation_call = self.mater_validation_table[item]
+            validation_call = self.master_validation_table[item]
             result = validation_call(fatal=fatal, timeout=time_remaining, **kwargs) and result
         return result
 

@@ -28,13 +28,23 @@ class GoogleSearchSection(SWADLPageSection):
             name="about_link",
             parent=self,
             selector='.MV3Tnb',
+            index= 0,
             validation={VALIDATE_VISIBLE: True},
         )
+        self.store_link = SWADLControl(
+            name="store_link",
+            parent=self,
+            selector='.MV3Tnb',
+            index= 1,
+            validation={VALIDATE_VISIBLE: True},
+        )
+
         # used by self.validate_loaded()
         self.validate_loaded_queue = [self.search_box]
         self.validate_all = [
             self.search_box,
-            self.about_link
+            self.about_link,
+            self.store_link,
         ]
 
     def do_search(self):
