@@ -47,6 +47,7 @@ fi
 if [ -d "test_*.log" ] ; then
     rm test_*.log
 fi
+source $SWADL_HOME/venv/bin/activate
 echo "Calling: $1 $2 $3 $4 $5 $6 $7 $8 $9"
 $1 $2 $3 $4 $5 $6 $7 $8 $9
 if [ -d "test_failures.log" ] ; then

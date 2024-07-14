@@ -10,4 +10,5 @@ if [ ! ":$1" == ":/q" ] ; then
     echo "Now updating pip"
     echo "python3 -m pip install --upgrade pip"
 fi
+source $SWADL_HOME/venv/bin/activate
 python3 -m pip install --upgrade pip

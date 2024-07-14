@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+source $SWADL_HOME/venv/bin/activate
+updatepip
+pip install -e $SWADL_HOME
+updateselenium
