@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+test -z "${SWADL_HOME}" && export SWADL_HOME=$(find / -name swadl 2>/dev/null)
+if [[ ! ":${PATH}" == *"${SWADL_HOME}"* ]] then export PATH=$PATH:$SWADL_HOME/bin ; fi

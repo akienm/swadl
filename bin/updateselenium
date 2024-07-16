@@ -10,6 +10,8 @@ if [ ! ":$1" == ":/q" ] ; then
     echo "Now updating selenium"
     echo "pip3 install --upgrade pip"
 fi
+source $(find / -name swadlbashparams 2>/dev/null)
+cd $SWADL_HOME
 updatepip /q
 echo y | pip3 uninstall selenium
 echo y | pip3 install selenium

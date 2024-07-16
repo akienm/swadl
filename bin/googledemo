@@ -3,6 +3,7 @@ echo "googledemo called with $1 $2 $3 $4 $5 $6 $7 $8 $9"
 echo "2024 Akien Maciain"
 echo "Purpose: To run the google_unit_tests demo in linux"
 echo "placeholder script for now"
+source $(find / -name swadlbashparams 2>/dev/null)
 if [ ":$SWADL_HOME" == ":" ] ; then
     echo "So sad."
     echo "Friendly person, I cant do this without the"

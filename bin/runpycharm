@@ -1,4 +1,3 @@
 #!/usr/bin/env bash
-export SWADL_HOME=$(find / -name swadl 2>/dev/null)
-export PATH=$PATH:$SWADL_HOME/bin
-bash $(find / -name pycharm.sh 2>/dev/null)  > /dev/null 2>&1 &
+source $(find / -name swadlbashparams 2>/dev/null)
+bash $(find / -name pycharm.sh 2>/dev/null) $SWADL_HOME > /dev/null 2>&1 &
