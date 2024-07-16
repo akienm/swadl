@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source $(find / -name swadlbashparams 2>/dev/null)
+test -z "${SWADL_HOME}" && source $(find / -name swadlbashparams 2>/dev/null)
 cd $SWADL_HOME
 python3 -m venv venv
 source $SWADL_HOME/venv/bin/activate
