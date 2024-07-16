@@ -3,6 +3,6 @@ test -z "${SWADL_HOME}" && source $(find / -name swadlbashparams 2>/dev/null)
 cd $SWADL_HOME
 python3 -m venv venv
 source $SWADL_HOME/venv/bin/activate
-updatepip
+source $SWADL_HOME/bin/updatepip
 pip install -e $SWADL_HOME
-updateselenium
+source $SWADL_HOME/bin/updateselenium

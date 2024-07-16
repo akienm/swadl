@@ -12,6 +12,6 @@ if [ ! ":$1" == ":/q" ] ; then
 fi
 test -z "${SWADL_HOME}" && source $(find / -name swadlbashparams 2>/dev/null)
 cd $SWADL_HOME
-updatepip /q
+source $SWADL_HOME/bin/updatepip /q
 echo y | pip3 uninstall selenium
 echo y | pip3 install selenium
