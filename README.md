@@ -13,24 +13,60 @@ low level interfaces/
 This is intended to be both reusable code to launch from, and to be an illustration of test automation framework design best practices.
 
 ## Installation for Automation Developers
-1) Fetch the repo: git clone https://github.com/akienm/swadl.git
-2) Set the environment variable SWADL_HOME to point to the repo's local
+1) Go to a location on your local hard drive to put SWADL. 
+   Personally, I reccomend having one folder for all your repos, 
+   but you do you. :) 
+
+
+2) Fetch the repo: 
+
+        git clone https://github.com/akienm/swadl.git
+3) cd into the new repo
+
+        cd swadl
+
+4) Set the environment variable SWADL_HOME to point to the repo's local
    directory. You can use SystemPropertiesAdvanced.exe to set an environment 
    variable.
+
+        CMD.EXE: google for setting environment variables under windows
+
+        bash: SWADL_HOME=$(pwd)     (recommend putting in .bashrc or similar)
+
 3) Add %SWADL_HOME%\bin to your path
-4) Install the repo: pip install -e %SWADL_HOME%
+
+        CMD.EXE: google for setting environment variables under windows
+
+        bash: PATH=PATH:$(pwd)/bin     (recommend putting in .bashrc or similar)
+4) Install the repo:
+
+        pip install -e %SWADL_HOME%
+    Doing this will also take care of installing your requirements
+
+## Running the demo:
+All the examples and support code was developed on Windows. Almost all the 
+python code, including the SWADL components, is platform independent. The
+batch files and shell scripts try to mirror one another, but are not perfect.
+
+The demo tests run on either nose2 or pytest.
+
+On Windows, the demo code can be run once the setup is complete by typing either:
+
+        googledemo
+or 
+
+        googledemo p      (this one for pytest on windows)
+
+On Linux, we can try
+
+        bash $SWADL_HOME\bin\googledemo.sh
+
+by default, these will run under nose2 (because I like the output better) and
+the second one runs under pytest.
 
 ## Status of the code as of this writing
 Originally developed as a proof of concept. Not all functions yet fully implemented and
 debugged as of this writing. See TODO.md for more information.
-
-## Organization of the code
-* `swadl/bin`: various whatnot I use to develop this
-* `swadl/demos`: The demos. As of now, there's one
-* `swadl/engine`: The SWADL Framework
-* `swadl/README.md`: This file
-* `swadl/TODO.md`: An overview of some of the major points of this framework still to implement
-* `swadl/ToO.md`: Theory of operation (planned)
 
 ## Overview of Major Architectural Goals:
 1) This code implements a set of interfaces intended to replace the 
@@ -42,70 +78,31 @@ debugged as of this writing. See TODO.md for more information.
 5) Portray code that can gather all the errors, not just stop at the 
    first one.
 
-## Platform:
-All the examples and support code was developed on Windows. Almost all the 
-python code, including the SWADL components, is platform independent. 
-
-The demo tests run on either nose2 or pytest.
-
-The demo code can be run once the setup is complete by typing either:
-googledemo
-or 
-googledemo p
-
-The first one runs under nose2 (because I like the output better) and
-the second one runs under pytest.
-
 ## Terminology:
-NOTE: This use of assertion comes from application development. Where
-assert is used to indicate "we can continue". 
-TODO: Change the languaging of this to reflect how we use assertions
-with other test automation frameworks.
-
-- Assertion - Assertions are condition tests which prove that the test can 
-continue or not. Failed assertions are almost always "Errors".
+- Assertion - Assertions are condition tests which prove the test case. 
+- Validation - a validation is basically an automatically generated assertion
 - Error - This means the test experienced an error and was unable to complete. This is not the same as a "failure".
-- Failure - This means that the thing the test was actually testing didn't meet expectations. This may mean something as small as a control which was the wrong color, it's noted and the test continues. Validations can usually be marked with the keyword `fatal`. If the call has `fatal=True`, that means if it fails, raise an exception.
-- Validate - this means to perform a test that, if it fails, means a test failure. Sometimes Validations with fatal=True are ALSO errors.
 
-## Setup
-For use in developing the framework, just pip install swadl (TODO)
-
-For development on the framework, you will need:
-* a SWADL_HOME environment variable, which is the root of the SWADL system.
-* Typical directory layout:
-```
-[%SWADL_HOME%]
-├───[bin]
-│   ├───googledemo.bat 
-│   ├───nose2runner.bat
-│   ├───pytestrunner.bat
-│   └───runatest.bat
-├───[project]
-│   ├───[demos]
-│   │   └───google_unit_tests.py
-│   ├───[flows]
-│   │   ├───google_search_constants.py
-│   │   └───google_search_flow.py
-│   ├───[page_sections]
-│   │   ├───google_results_page.py
-│   │   └───google_search_page.py
-├───[swadl]
-│   ├───[engine]
-│   ├───helpers
-│   └───engine
-├───ENGINE.MD
-├───README.nd
-├───requirements.txt
-├───setup.py
-└───TODO.md
+## Organization of the code
+* `swadl/bin`: various whatnot I use to develop this
+* `swadl/Project`: The demos. As of now, there's one
+* `swadl/engine`: The SWADL Framework
+* `swadl/README.md`: This file
+* `swadl/TODO.md`: An overview of some of the major points of this framework still to implement
+* `swadl/ToO.md`: Theory of operation (planned)
 
 ```
-* Add `%SWADL_HOME%\bin` to your path
-* Download Selenium from https://www.selenium.dev/downloads/ - put it in `%SWADL_USERHOME%\bin`, and rename it from something like selenium-server-standalone-3.141.59.jar to selenium-server-standalone.jar
-* You will also need to download a driver, such as chromedriver, edgedriver, firefox, etc, and add that to `%SWADL_USERHOME%\bin`, which also has to be on your path.
-* Setting up SWADL to handle your browser selection happens inside of SWADLconstants.py, toward the end. This will eventually be separated out into it's own file.
-* Install python libraries from `seleniumpoc/requirements.txt`
+%SWADL_HOME%
+├───bin
+│       selenium-server-standalone.jar
+├───Project
+│   ├───demos
+│   ├───flows
+│   └───page_sections
+└───swadl
+    ├───engine
+    └───helpers
+```
 
 ## Usage (within tests):
 1) In a general sense, tests are responsible for DATA and KNOWING WHICH FLOWS TO INVOKE. Tests NEVER talk to pages directly.
