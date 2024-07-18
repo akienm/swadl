@@ -35,6 +35,7 @@ TEST_PARAMETERS = {
     SWADLTEST_VERBOSE: False,
 }
 
+# Now this reads them in, or their defaults if they're unspecified
 for key in TEST_PARAMETERS:
     cfgdict[key] = os.environ.get(key, TEST_PARAMETERS[key])
 
