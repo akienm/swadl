@@ -1,5 +1,6 @@
 # File: SWADLhelpers.py
 # Purpose: "everything else"
+from SWADL.engine.swadl_constants import ID
 
 OBJECT_ALREADY_DISPLAYED = '*** OBJECT ALREADY DISPLAYED ABOVE ***'
 indents = 4
@@ -79,11 +80,23 @@ class Bannerize:
                 # here we're creating a key that has both the id and the item.__str__()
                 # because otherwise an empty list will just look like any other
                 # empty list we've already displayed.
-                item_id_string = f"{id(item)} {item}"
+                item_id_string = ""
+
+                # Now we check to see if it's a dict with an ID field
+                if isinstance(item, dict) and ID in item.keys():
+                    item_id_string += item[ID]
+                elif hasattr(item, "get_name"):
+                    item_id_string += item.get_name()
+                else:
+                    item_id_string += f"{item}"
+                    # TODO: Remove me if OK: item_id_string = item_id_string[:60]
+                item_id_string += f" with OID of {id(item)}"
+                # Is it in the list of things already done?
                 if item_id_string in self.list_of_completed_objects:
                     self.types_that_got_substituted.append(item_id_string)
-                    item = OBJECT_ALREADY_DISPLAYED
+                    item = f'{OBJECT_ALREADY_DISPLAYED} as {item_id_string}'
                 else:
+                    # No? then add it
                     self.list_of_completed_objects.append(item_id_string)
         return item
 

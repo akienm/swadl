@@ -150,7 +150,7 @@ class SWADLPageSection(SWADLBase):
         #                                self.validate_loaded_queue
         if timeout is None:
             if hasattr(self, SELENIUM_PAGE_DEFAULT_TIMEOUT):
-                timeout = self.SELENIUM_PAGE_DEFAULT_TIMEOUT
+                timeout = getattr(self, SELENIUM_PAGE_DEFAULT_TIMEOUT)
             else:
                 timeout = cfgdict[SELENIUM_PAGE_DEFAULT_TIMEOUT]
         if not controls:

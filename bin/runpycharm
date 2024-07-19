@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+test -z "${SWADL_HOME}" && source $(find / -name swadlbashparams 2>/dev/null)
+bash $(find / -name pycharm.sh 2>/dev/null) $SWADL_HOME > /dev/null 2>&1 &
