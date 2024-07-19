@@ -68,7 +68,7 @@ class SWADLBase(object):
 
     #######################################################################
     def __init__(self, name=None, substitution_sources=None, **kwargs):
-        # Purpose: Initilizes the instance, appies unused kwargs
+        # Purpose: Initializes the instance, applies unused kwargs
         # Inputs: - name - The name of this object. Used for reporting. REQUIRED!
         #         - substitution_sources - list of string, values to use when calling resolve_substitutions()
         #           from within this object
