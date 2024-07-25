@@ -22,6 +22,9 @@ class GoogleFlows(SWADLBaseFlow):
 
     def get_matching_results(self):
         # Purpose: Validate that the search_key provided is in the result headers somewhere
-        # Keys: SEARCH_RESULT_STRING - string to look for
-        # Returns: Project.flows.google_search_constants.SEARCH_RESULT_TITLES_LIST
+        # Keys: Emits matching title list in Project.flows.google_search_constants.SEARCH_RESULT_TITLES_LIST
         self.google_results_page.get_matching_results()
+
+    def validate_background_gui(self):
+        #purpose:
+        self.google_search_page.validate_background_gui()
