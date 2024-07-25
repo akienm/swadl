@@ -35,3 +35,7 @@ class TestGoogleSearchSWADLUnitTests(SWADLTest):
             container=self.test_data[SEARCH_RESULT_TITLES_LIST],
         )
 
+    def test_background_gui(self):
+        # Purpose: Validate all links :
+
+        self.google_flows.validate_background_gui()
