@@ -256,12 +256,9 @@ class SWADLControl(SWADLBase):
     def get_exist(self, end_time=None, expected=True, force=True,
                   timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
         # Purpose: Returns true if control exists
-        end_time, element_list = self._check_actionable(
-            end_time=end_time,
-            force=force,
-            kwargs=kwargs,
-            timeout=timeout
-        )
+        end_time = end_time if end_time else time.time() + timeout
+        self._refresh()
+        self.apply_kwargs(kwargs)
         return self._get_exist(end_time=end_time, expected=expected, timeout=timeout, **kwargs)[0]
 
     def get_enabled(self, end_time=None, expected=True,
