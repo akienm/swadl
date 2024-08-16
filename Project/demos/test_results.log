@@ -1,0 +1,20 @@
+20240712_145011.982757::Started test_results.log for google_unit_tests.TestGoogleSearchSWADLUnitTests/(TestGoogleSearchSWADLUnitTests)test_open_page
+20240712_145011.982757::Done test_failures.log 
+20240712_145013.411583::{
+    "SWADL Validation Result": {
+        "result": "PASSED"
+        "for control": "google_unit_tests.TestGoogleSearchSWADLUnitTests/GoogleSearchSection.(SWADLControl)search_box"
+        "with selector": "#APjFqb"
+        "is_text": None
+        "has_text": None
+        "index": None
+        "validation_name": "visible"
+        "expected": True
+        "elapsed_time": "0.006 seconds"
+        "fatal": True
+        "report_me": ""
+        "comments": ""
+    }
+}
+
+20240712_145013.412923::Done test_failures.log for google_unit_tests.TestGoogleSearchSWADLUnitTests/(TestGoogleSearchSWADLUnitTests)test_background_gui
