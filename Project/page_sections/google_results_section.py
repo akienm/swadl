@@ -1,13 +1,10 @@
 # File: google_results_section.py
 # Purpose: To validate the SWADL (Test Automation Framework)
 
-import logging
-
 from SWADL.engine.swadl_constants import VALIDATE_VISIBLE
 from Project.flows.google_search_constants import SEARCH_RESULT_STRING, SEARCH_RESULT_TITLES_LIST
 from SWADL.engine.swadl_control import SWADLControl
 from SWADL.engine.swadl_base_section import SWADLPageSection
-from Project.flows.google_search_constants import SEARCH_RESULT_TITLES
 
 
 class GoogleResultSection(SWADLPageSection):
@@ -35,7 +32,7 @@ class GoogleResultSection(SWADLPageSection):
             index=0,
             name="any_result",
             parent=self,
-            selector='h3[class="LC20lb MBeuO DKV0Md"]',  #.DKV0Md
+            selector='h3[class="LC20lb MBeuO DKV0Md"]',  # .DKV0Md
             validation=VALIDATE_VISIBLE,
         )
 

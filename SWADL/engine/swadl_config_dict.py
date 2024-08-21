@@ -3,7 +3,6 @@ File: SWADLconfig_dict.py
 Purpose: Master global configuration dictionary
 """
 
-import logging
 from SWADL.engine.swadl_dict import SWADLDict
 
 
@@ -23,16 +22,16 @@ class ConfigDict(SWADLDict):
 class TestConfigDict:
     # Purpose: Unit tests for ConfigDict. Intended for pytest
 
-    def test_ConfigDict(self):
+    def test_config_dict(self):
         # Purpose: Validate that singleton works
         a = ConfigDict(a=1)
-        b = ConfigDict(b=2)
-        c = ConfigDict(c=3)
         d = a
-        d = b
-        d = c
         assert d['a'] == 1
+        b = ConfigDict(b=2)
+        d = b
         assert d['b'] == 2
+        c = ConfigDict(c=3)
+        d = c
         assert d['c'] == 3
         assert str(d) == "{'a': 1, 'b': 2, 'c': 3}"
         print("test_ConfigDict: PASSED")
