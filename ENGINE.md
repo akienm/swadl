@@ -2,7 +2,7 @@
 Purpose: This is a description of what is meant by engine based testing, and how it's used.
 
 ## Problem Statement
-In many programmatical testing envinronements, the tests interact with the controls they're required to interact with, and don't pay attention to the rest of the controls.
+In many programmatical testing environments, the tests interact with the controls they're required to interact with, and don't pay attention to the rest of the controls.
 
 One can add code to check each thing, but most of us never think to, as it's a lot of extra work that is very interface specific.
 

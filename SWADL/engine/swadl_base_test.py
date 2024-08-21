@@ -1,14 +1,14 @@
 # File: SWADLtest
 # Purpose: to report errors on exit
 
-from pprint import pformat
 import unittest
 
 from SWADL.engine.swadl_base import SWADLBase
 from SWADL.engine.swadl_cfg import cfgdict
-from SWADL.engine.swadl_constants import FAILURE_LOG, TEST_OBJECT, TEST_DATA
+from SWADL.engine.swadl_constants import FAILURE_LOG
 from SWADL.engine.swadl_constants import RESULT_LOG
 from SWADL.engine.swadl_constants import TEST_NAME
+from SWADL.engine.swadl_constants import TEST_OBJECT
 from SWADL.engine.swadl_output import Output
 
 
@@ -23,11 +23,11 @@ class SWADLTest(unittest.TestCase, SWADLBase):
 
     def __init__(self, *args, **kwargs):
         # Set me up!
-        # First, finish initalizing the unittest component
+        # First, finish initializing the unittest component
         unittest.TestCase.__init__(self, *args, **kwargs)
 
         # now extract the test name
-        # This works for Nose2, it is unknown as of this writing whether it will work for pytrest
+        # This works for Nose2, it is unknown as of this writing whether it will work for pytest
         extracted_name = self.__str__()
         parts = extracted_name.split(" ")
         self.name = parts[1][1:-1]

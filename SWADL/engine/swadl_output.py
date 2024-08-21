@@ -22,6 +22,7 @@ class Output(SWADLBase):
         # Purpose: Store the filename
         # Inputs: - str:file_name
         self.name = name
+        SWADLBase.__init__(self, file_name=file_name, comment=comment, name=name)
         self.file_name = file_name
         if os.path.exists(self.file_name):
             os.remove(self.file_name)

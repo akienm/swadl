@@ -12,6 +12,7 @@ from SWADL.engine.swadl_base import SWADLBase
 logger = logging.getLogger(__name__)
 
 
+# noinspection PyBroadException
 class SWADLPageSection(SWADLBase):
     # Purpose: Represents a portion of a page
     # Usage:
@@ -79,7 +80,7 @@ class SWADLPageSection(SWADLBase):
                 f"{self.url}"
             )
 
-        self.validate_loaded()
+        self.validate_loaded(timeout=timeout)
 
     def validate_controls(self, controls=None, validation=None, **kwargs):
         # Purpose: Validates a collection of controls.
@@ -133,7 +134,6 @@ class SWADLPageSection(SWADLBase):
                 pass
 
             # now validate the control, using the validation variable, which might be None
-            new_result = False  # This is here so I can examine the output
             new_result = control.validate(validation=validation, **kwargs)
             result = result and new_result
         return result
@@ -145,7 +145,7 @@ class SWADLPageSection(SWADLBase):
     # Users: validate_loaded()
 
     def validate_loaded(self, controls=None, fatal=True, timeout=None, **kwargs):
-        # Purpose: Vaildates that all the specified controls are visible
+        # Purpose: Validates that all the specified controls are visible
         # Inputs: (collection)controls - controls to verify. If not specified, tries to use
         #                                self.validate_loaded_queue
         if timeout is None:

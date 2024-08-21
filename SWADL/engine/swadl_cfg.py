@@ -5,11 +5,19 @@ from selenium import webdriver
 
 # SWADL libs
 from SWADL.engine.swadl_config_dict import ConfigDict
-from SWADL.engine.swadl_constants import SELENIUM_BROWSER_OPTIONS, SELENIUM_BROWSER_PLATFORM, SELENIUM_BROWSER_VERSION, \
-    SELENIUM_BROWSER, SELENIUM_CONTROL_DEFAULT_TIMEOUT, SELENIUM_PAGE_DEFAULT_TIMEOUT, SELENIUM_TEST_SET_FILE, \
-    SWADLTEST_URL, SWADLTEST_VERBOSE, DRIVER, ID, CONFIG_DICT
+from SWADL.engine.swadl_constants import SELENIUM_BROWSER_OPTIONS
+from SWADL.engine.swadl_constants import SELENIUM_BROWSER_PLATFORM
+from SWADL.engine.swadl_constants import SELENIUM_BROWSER_VERSION
+from SWADL.engine.swadl_constants import SELENIUM_BROWSER
+from SWADL.engine.swadl_constants import SELENIUM_CONTROL_DEFAULT_TIMEOUT
+from SWADL.engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
+from SWADL.engine.swadl_constants import SELENIUM_TEST_SET_FILE
+from SWADL.engine.swadl_constants import SWADLTEST_URL
+from SWADL.engine.swadl_constants import SWADLTEST_VERBOSE
+from SWADL.engine.swadl_constants import DRIVER
+from SWADL.engine.swadl_constants import ID
+from SWADL.engine.swadl_constants import CONFIG_DICT
 from SWADL.engine.swadl_constants import TEST_DATA
-from SWADL.engine.swadl_constants import VALIDATIONS
 from SWADL.engine.swadl_dict import SWADLDict
 
 # Section: cfgdict
@@ -20,7 +28,7 @@ cfgdict[ID] = CONFIG_DICT
 
 
 # Section: SWADL Defaults
-# Purpose: Specify the basemost defaults, but allow environment variables to override
+# Purpose: Specify the base-most defaults, but allow environment variables to override
 # Notes: The use of the environment means we just need to set env vars to pass in what
 #        we want to do. Makes everything very repeatable.
 TEST_PARAMETERS = {

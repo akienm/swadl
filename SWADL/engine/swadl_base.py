@@ -9,10 +9,6 @@ import traceback
 
 from SWADL.engine import bannerizer
 from SWADL.engine.swadl_cfg import cfgdict
-from SWADL.engine.swadl_constants import ARGS
-from SWADL.engine.swadl_constants import ARGSCOUNT
-from SWADL.engine.swadl_constants import ARGSCOUNT_OK
-from SWADL.engine.swadl_constants import ARGSFIELDS
 from SWADL.engine.swadl_constants import ASSERT
 from SWADL.engine.swadl_constants import CALLER
 from SWADL.engine.swadl_constants import CONTAINER
@@ -44,15 +40,14 @@ from SWADL.engine.swadl_constants import TEST_OBJECT
 from SWADL.engine.swadl_constants import TIMEOUT
 from SWADL.engine.swadl_constants import TIME_FINISHED
 from SWADL.engine.swadl_constants import TIME_STARTED
-from SWADL.engine.swadl_constants import TITLE
 from SWADL.engine.swadl_constants import TRACEBACK_SPACES
-from SWADL.engine.swadl_constants import VALIDATION_MC
 from SWADL.engine.swadl_constants import X
 from SWADL.engine.swadl_constants import Y
 from SWADL.engine.swadl_dict import SWADLDict
-from SWADL.engine.swadl_exceptions import FrameworkError
+from SWADL.engine.swadl_exceptions import SWADLTestError
 
 
+# noinspection SpellCheckingInspection
 class SWADLBase(object):
     # Purpose: Base class for UI interactive code. Wraps interaction with webdriver
     # Notes: Adds cfgdict and driver to all UI control classes
@@ -65,10 +60,11 @@ class SWADLBase(object):
     #          WARNING: ALWAYS BEWARE OF KEY COLLISIONS, THAT'S WHY WE HAVE test_data.dump()!
 
     name = None
+    _logger = None
 
     #######################################################################
     def __init__(self, name=None, substitution_sources=None, **kwargs):
-        # Purpose: Initilizes the instance, appies unused kwargs
+        # Purpose: Initializes the instance, applies unused kwargs
         # Inputs: - name - The name of this object. Used for reporting. REQUIRED!
         #         - substitution_sources - list of string, values to use when calling resolve_substitutions()
         #           from within this object
@@ -85,7 +81,7 @@ class SWADLBase(object):
         self.parent = None
         self.apply_kwargs(kwargs)
 
-        # these are to make this fuctionality avilable to every object using it
+        # these are to make this functionality available to every object using it
         self.cfgdict = cfgdict
         self.driver = self.cfgdict[DRIVER]
         self.test_data = self.cfgdict[TEST_DATA]
@@ -95,7 +91,7 @@ class SWADLBase(object):
         self.substitution_sources = [self.__dict__]
         if substitution_sources:
             for item in substitution_sources:
-                self.substitution_sources.append(substitution_sources)
+                self.substitution_sources.append(item)
         if SUBSTITUTION_SOURCES in cfgdict:
             for item in cfgdict[SUBSTITUTION_SOURCES]:
                 self.substitution_sources.append(item)
@@ -128,7 +124,6 @@ class SWADLBase(object):
         return result
     #######################################################################
 
-    _logger = None
     @property
     def log(self):
         # Purpose: To provide access to logs everywhere without another import
@@ -139,13 +134,13 @@ class SWADLBase(object):
         return self.__class__._logger
 
     @classmethod
-    def get_timestamp(cls, time=None):
+    def get_timestamp(cls, time_to_format=None):
         # Purpose: To have a standardized timestamp for anything that needs it.
         # Optionally takes a datetime value, or uses now.
         # Returns: yymmdd_hhmmss.xxxxxx as string
-        if time is None:
-            time = datetime.datetime.now()
-        return time.strftime("%Y%m%d_%H%M%S.%f")
+        if time_to_format is None:
+            time_to_format = datetime.datetime.now()
+        return time_to_format.strftime("%Y%m%d_%H%M%S.%f")
 
     #######################################################################
     class _SafeDict(dict):
@@ -160,10 +155,10 @@ class SWADLBase(object):
             return '{' + key + '}'
 
     def resolve_substitutions(self, in_string, substitution_sources=None):
-        # Purpose: Perform f-string style substitions without errors for missing keys, and using
+        # Purpose: Perform f-string style substitutions without errors for missing keys, and using
         #          sources like global test data or other dicts to feed the substitution engine
         # Inputs: - (str)in_string - the string to do substitutions on
-        #         - dict or list of dict - items to use for substition
+        #         - dict or list of dict - items to use for substitution
 
         if not substitution_sources:
             substitution_sources = self.substitution_sources
@@ -238,7 +233,8 @@ class SWADLBase(object):
         return result
 
     #######################################################################
-    def _remove_keys(self, incoming_dict, list_of_keys=None):
+    @staticmethod
+    def _remove_keys(incoming_dict, list_of_keys=None):
         # Purpose: Remove keys from kwargs before passing them on. For instance, most webdriver
         #          calls do not accept timeout as a keyword.
         # Inputs: - (dict)incoming_dict: a kwargs style dict
@@ -248,7 +244,7 @@ class SWADLBase(object):
         list_of_keys = [] if not list_of_keys else list_of_keys
         for key in list_of_keys:
             if key in modified_dict:
-                del(modified_dict[key])
+                del (modified_dict[key])
         return modified_dict
 
     def _remove_keys_webdriver_doesnt_like(self, incoming_dict):
@@ -261,7 +257,8 @@ class SWADLBase(object):
         )
         return self._remove_keys(incoming_dict, keys_webdriver_doesnt_like)
 
-    def timeout_remaining(self, end_time=None, timeout=0, minimum=1):
+    @staticmethod
+    def timeout_remaining(end_time=None, timeout=0, minimum=1):
         # Purpose: Return timeout remaining
         # Args:
         #     timeout (float, optional): expected timeout. Defaults to 0.
@@ -274,7 +271,8 @@ class SWADLBase(object):
         return end_time - time_now
 
     #######################################################################
-    def _process_stack_trace(self, exc_info=None):
+    @staticmethod
+    def _process_stack_trace(exc_info=None):
         # Purpose: Standardizes the traceback information
         # Parameters: exc_info (list of string) the traceback info to process
         # Returns: the normalized list
@@ -285,6 +283,8 @@ class SWADLBase(object):
             del (exc_info[-1])
         return exc_info
 
+    @staticmethod
+    def _this_code_is_unreachable_so_there(exc_info):
         # now we're going to chop off all the nose2 traceback entries
         line_added = False
         recording = False
@@ -295,10 +295,7 @@ class SWADLBase(object):
             interim_value = [exc_item.replace('\n', '')]
 
             # see if we should start reporting yet or not
-            if (
-                    (('Project\demos' in exc_item) )
-                    and recording is False
-            ):
+            if ('Project\demos' in exc_item) and recording is False:
                 # as soon as 'Project/demos' appears, we want to capture
                 # all of the remaining entries
                 recording = True
@@ -324,12 +321,12 @@ class SWADLBase(object):
             result.append(DIVIDER + 'error part:')
         return result
 
-    def _make_framework_error(self, message=None, reporting_dict=None):
+    def _make_swadl_test_error(self, message=None, reporting_dict=None):
         # Purpose: Produces a FrameworkError with the passed data
-        framework_error = FrameworkError(
+        framework_error = SWADLTestError(
             self.bannerize(
                 {
-                    "FrameworkError": {
+                    "SWADLTestError": {
                         MESSAGE: message,
                         REPORTING_DICT: reporting_dict,
                         SELF__DICT__: self.__dict__,
@@ -359,7 +356,7 @@ class SWADLBase(object):
         self.test_data[reporting_dict[ID]] = reporting_dict
         # now assume each group will have a group processor
         # we want the method name that called that, not our
-        # direct caller. Hence the [2] in the lione below
+        # direct caller. Hence the [2] in the line below
         reporting_dict[CALLER] = caller
         reporting_dict[MESSAGE] = f"Validating {caller} which wants {message}"
         reporting_dict[KWARGS] = kwargs
@@ -374,7 +371,7 @@ class SWADLBase(object):
         try:
             reporting_dict[LOGICAL_RESULT] = reporting_dict[HELPER](reporting_dict)
         except Exception as e: 
-            # this next line reraises the same class with 
+            # this next line re-raises the same class with additional data
             self.test_data[TEST_OBJECT].accumulated_failures.append(reporting_dict)
             raise e.__class__(
                 "INVALID RESULT WHEN PERFORMING LOGICAL COMPARE\n" +
@@ -404,9 +401,9 @@ class SWADLBase(object):
             elif caller.upper().startswith(EXPECT):
                 self.log.warning(message)
                 if reporting_dict[KWARGS].get(FATAL, False):
-                    raise Exception("A WARNING WAS MARKED AS FATAL, THIS SHOULD'NT BE!\n"+message)
+                    raise Exception("A WARNING WAS MARKED AS FATAL, THIS SHOULDN'T BE!\n"+message)
             else:
-                message = "UNKNOWN ORIGIN POINT FOR VALIDATION, THIS SHOULD'NT BE!\n" + message
+                message = "UNKNOWN ORIGIN POINT FOR VALIDATION, THIS SHOULDN'T BE!\n" + message
                 self.log.error(message)
                 raise Exception(message)
 
@@ -414,7 +411,8 @@ class SWADLBase(object):
 
     ################################################################################
 
-    def _logical_test_equal(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_equal(reporting_dict=None):
         # Purpose: performs the actual comparison
         return reporting_dict[KWARGS][X] == reporting_dict[KWARGS][Y]
 
@@ -439,7 +437,8 @@ class SWADLBase(object):
         return self._test_equal_common(x=x, y=y, **kwargs)
 
     ################################################################################
-    def _logical_test_not_equal(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_not_equal(reporting_dict=None):
         # Purpose: performs the actual comparison
         return not (reporting_dict[KWARGS][X] == reporting_dict[KWARGS][Y])
 
@@ -464,7 +463,8 @@ class SWADLBase(object):
         return self._test_equal_common(x=x, y=y, **kwargs)
 
     ################################################################################
-    def _logical_test_true(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_true(reporting_dict=None):
         # Purpose: performs the actual comparison
         return True if reporting_dict[KWARGS][EXPER] is True else False
 
@@ -489,11 +489,12 @@ class SWADLBase(object):
         return self._test_true_common(exper=exper, **kwargs)
 
     ################################################################################
-    def _logical_test_false(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_false(reporting_dict=None):
         # Purpose: performs the actual comparison
         return True if reporting_dict[KWARGS][EXPER] is False else False
 
-    def _test_False_common(self, **kwargs):
+    def _test_false_common(self, **kwargs):
         return self._assertion_post_processor(
             message=f'exper={kwargs[EXPER]} should evaluate to False',
             helper=self._logical_test_false,
@@ -502,18 +503,19 @@ class SWADLBase(object):
 
     def assert_false(self, exper=None, **kwargs):
         # Description: records assertion failure if condition not met
-        return self._test_False_common(exper=exper, **kwargs)
+        return self._test_false_common(exper=exper, **kwargs)
 
     def require_false(self, exper=None, **kwargs):
         # Description: records error if condition not met
-        return self._test_False_common(exper=exper, **kwargs)
+        return self._test_false_common(exper=exper, **kwargs)
 
     def expect_false(self, exper=None, **kwargs):
         # Description: records warning if condition not met
-        return self._test_False_common(exper=exper, **kwargs)
+        return self._test_false_common(exper=exper, **kwargs)
 
     ################################################################################
-    def _logical_test_is(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_is(reporting_dict=None):
         # Purpose: performs the actual comparison
         return reporting_dict[KWARGS][EXPER1] is reporting_dict[KWARGS][EXPER2]
 
@@ -537,7 +539,8 @@ class SWADLBase(object):
         return self._test_is_common(exper1=exper1, exper2=exper2, **kwargs)
 
     ################################################################################
-    def _logical_test_is_not(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_is_not(reporting_dict=None):
         # Purpose: performs the actual comparison
         return reporting_dict[KWARGS][EXPER1] is not reporting_dict[KWARGS][EXPER2]
 
@@ -561,7 +564,8 @@ class SWADLBase(object):
         return self._test_is_not_common(exper1=exper1, exper2=exper2, **kwargs)
 
     ################################################################################
-    def _logical_test_is_none(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_is_none(reporting_dict=None):
         # Purpose: performs the actual comparison
         return reporting_dict[KWARGS][OBJ] is None
 
@@ -572,20 +576,21 @@ class SWADLBase(object):
             **kwargs,
         )
 
-    def assert_is_none(self, obj=None, *args, **kwargs):
+    def assert_is_none(self, obj=None, **kwargs):
         # Description: records assertion failure if condition not met
         return self._test_is_none_common(obj=obj, **kwargs)
 
-    def require_is_none(self, obj=None, *args, **kwargs):
+    def require_is_none(self, obj=None, **kwargs):
         # Description: records error if condition not met
         return self._test_is_none_common(obj=obj, **kwargs)
 
-    def expect_is_none(self, obj=None, *args, **kwargs):
+    def expect_is_none(self, obj=None, **kwargs):
         # Description: records warning if condition not met
         return self._test_is_none_common(obj=obj, **kwargs)
 
     ################################################################################
-    def _logical_test_is_not_none(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_is_not_none(reporting_dict=None):
         # Purpose: performs the actual comparison
         return reporting_dict[KWARGS][OBJ] is not None
 
@@ -596,20 +601,21 @@ class SWADLBase(object):
             **kwargs,
         )
 
-    def assert_is_not_none(self, obj=None, *args, **kwargs):
+    def assert_is_not_none(self, obj=None, **kwargs):
         # Description: records assertion failure if condition not met
         return self._test_is_not_none_common(obj=obj, **kwargs)
 
-    def require_is_not_none(self, obj=None, *args, **kwargs):
+    def require_is_not_none(self, obj=None, **kwargs):
         # Description: records error if condition not met
         return self._test_is_not_none_common(obj=obj, **kwargs)
 
-    def expect_is_not_none(self, obj=None, *args, **kwargs):
+    def expect_is_not_none(self, obj=None, **kwargs):
         # Description: records warning if condition not met
         return self._test_is_not_none_common(obj=obj, **kwargs)
 
     ################################################################################
-    def _logical_test_in(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_in(reporting_dict=None):
         # Purpose: performs the actual comparison
         return reporting_dict[KWARGS][MEMBER] in reporting_dict[KWARGS][CONTAINER]
 
@@ -633,7 +639,8 @@ class SWADLBase(object):
         return self._test_in_common(member=member, container=container, **kwargs)
 
     ################################################################################
-    def _logical_test_not_in(self, reporting_dict=None):
+    @staticmethod
+    def _logical_test_not_in(reporting_dict=None):
         # Purpose: performs the actual comparison
         return reporting_dict[KWARGS][MEMBER] not in reporting_dict[KWARGS][CONTAINER]
 
