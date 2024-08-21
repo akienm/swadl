@@ -19,9 +19,10 @@ class GoogleResultSection(SWADLPageSection):
         self.url = "https://www.google.com"
 
         self.google_icon = SWADLControl(
+            index=0,
             name="google_icon",
             parent=self,
-            selector='img[alt="Google"]',
+            selector='img',
             validation=VALIDATE_VISIBLE,
         )
         self.search_box = SWADLControl(
@@ -31,6 +32,7 @@ class GoogleResultSection(SWADLPageSection):
             validation=VALIDATE_VISIBLE,
         )
         self.any_result_header = SWADLControl(
+            index=0,
             name="any_result",
             parent=self,
             selector='h3[class="LC20lb MBeuO DKV0Md"]',  #.DKV0Md
