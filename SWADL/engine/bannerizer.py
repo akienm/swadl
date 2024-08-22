@@ -6,6 +6,7 @@ OBJECT_ALREADY_DISPLAYED = '*** OBJECT ALREADY DISPLAYED ABOVE ***'
 indents = 4
 
 
+# noinspection SpellCheckingInspection
 class Bannerize:
     # Purpose: To format dictionaries, lists and other objects in a way
     # That can allow us to use the dictionary as a logging object

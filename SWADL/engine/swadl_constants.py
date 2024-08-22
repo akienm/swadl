@@ -9,7 +9,7 @@ import sys
 sys.dont_write_bytecode = True
 
 # Section: Uncategorized importable string constants
-# Purospe: Everything else not covered in the sections below
+# Purpose: Everything else not covered in the sections below
 ANY = 'Any'
 ARGS = 'ARGS'
 ARGSCOUNT = 'ARGSCOUNT'
@@ -82,8 +82,8 @@ X = 'x'
 Y = 'y'
 
 # Section: Environment Variables
-# Purpose: These are all importable names which coud have values passed in from the environment
-#          and which are present in the importable cgfdict (explained below)
+# Purpose: These are all importable names which could have values passed in from the environment
+#          and which are present in the importable cfgdict (explained below)
 SELENIUM_BROWSER = 'SELENIUM_BROWSER'
 SELENIUM_BROWSER_OPTIONS = 'SELENIUM_BROWSER_OPTIONS'
 SELENIUM_BROWSER_PLATFORM = 'SELENIUM_BROWSER_PLATFORM'

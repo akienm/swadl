@@ -1,8 +1,6 @@
 # File: google_search_section.py
 # Purpose: To validate the SWADL (Test Automation Framework)
 
-import logging
-
 from SWADL.engine.swadl_constants import VALIDATE_VISIBLE
 from SWADL.engine.swadl_control import SWADLControl
 from SWADL.engine.swadl_base_section import SWADLPageSection
@@ -53,7 +51,7 @@ class GoogleSearchSection(SWADLPageSection):
         # Emits: "GoogleSearchSection loaded ok": True" = page load validated
 
         self.load_page()
-        self.search_box.send_keys(value=self.test_data[SEARCH_KEY])
+        self.search_box.set_value(value=self.test_data[SEARCH_KEY])
         self.search_box.submit()
 
     def validate_background_gui(self):

@@ -10,7 +10,7 @@ if not %1.==/q. (
     echo        [1] = runner (nose2 or pytest or whatever)
     echo        [2] = script name in whatever form the specified test runner wants
     echo              nose2 prefers without the .py
-    echo              pytest preferw with the .py
+    echo              pytest prefers with the .py
     echo        [3] whatever other arguments
 )
 echo.
