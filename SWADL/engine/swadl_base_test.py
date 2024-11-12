@@ -68,3 +68,44 @@ class SWADLTest(unittest.TestCase, SWADLBase):
         super().tearDown()
         self.log.debug(self.bannerize(data=self.cfgdict))
         self.assert_true(exper=len(self.accumulated_failures) == 0)
+
+    def assert_equal(self, x=None, y=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_equal_common(x=x, y=y, **kwargs)
+
+    def assert_not_equal(self, x=None, y=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_equal_common(x=x, y=y, **kwargs)
+
+    def assert_true(self, exper=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_true_common(exper=exper, **kwargs)
+
+    def assert_false(self, exper=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_false_common(exper=exper, **kwargs)
+
+    def assert_is(self, exper1=None, exper2=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_is_common(exper1=exper1, exper2=exper2, **kwargs)
+
+    def assert_is_not(self, exper1=None, exper2=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_is_not_common(exper1=exper1, exper2=exper2, **kwargs)
+
+    def assert_is_none(self, obj=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_is_none_common(obj=obj, **kwargs)
+
+    def assert_is_not_none(self, obj=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_is_not_none_common(obj=obj, **kwargs)
+
+    def assert_in(self, member=None, container=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_in_common(member=member, container=container, **kwargs)
+
+    def assert_not_in(self, member=None, container=None, **kwargs):
+        # Description: records assertion failure if condition not met
+        return self._test_not_in_common(member=member, container=container, **kwargs)
+
