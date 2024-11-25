@@ -69,15 +69,15 @@ class HDHSHeader(SWADLPageSection):
             validation={VALIDATE_VISIBLE: True},
         )
 
-        self.contact = SWADLControl(
+        self.services = SWADLControl(
             is_text="Services",
             name="HeaderMore",
             parent=self,
-            selector='div.page-title.text-overflow',
+            selector='#body-element',
             validation={VALIDATE_VISIBLE: False},
         )
 
-        self.contact = SWADLControl(
+        self.donations = SWADLControl(
             is_text="Donations",
             name="HeaderMore",
             parent=self,
@@ -85,7 +85,7 @@ class HDHSHeader(SWADLPageSection):
             validation={VALIDATE_VISIBLE: False},
         )
 
-        self.contact = SWADLControl(
+        self.volunteer = SWADLControl(
             is_text="Volunteer",
             name="HeaderMore",
             parent=self,
@@ -93,14 +93,14 @@ class HDHSHeader(SWADLPageSection):
             validation={VALIDATE_VISIBLE: False},
         )
 
-        self.contact = SWADLControl(
+        self.education = SWADLControl(
             is_text="Education",
             name="HeaderMore",
             parent=self,
             selector='div.page-title.text-overflow',
             validation={VALIDATE_VISIBLE: False},
         )
-        self.contact = SWADLControl(
+        self.NewsandVideos = SWADLControl(
             is_text="News and Videos",
             name="HeaderMore",
             parent=self,
@@ -111,11 +111,24 @@ class HDHSHeader(SWADLPageSection):
         # used by self.validate_loaded()
         self.validate_loaded_queue = [self.banner, self.more]
 
-    def do_search(self):
+    def test_HDHS(self, test_data=None):
+        list_of_controls = [
+            self.banner_header,
+            self.banner_More,
+            self.banner_Services,
+            self.banner_Donations,
+            self.banner_Volunteer,
+            self.banner_Education,
+            self.banner_NewsandVideos
+        ]
+
+
         # Purpose: loads page if it's not loaded
         # Keys: SEARCH_KEY
         # Emits: "GoogleSearchSection loaded ok": True" = page load validated
 
-        self.load_page()
-        self.search_box.set_value(value=self.test_data[SEARCH_KEY])
-        self.search_box.submit()
+         #self.load_page()
+         #self.search_box.set_value(value=self.test_data[SEARCH_KEY])
+        # self.search_box.submit()
+        for item in list_of_controls:
+            item.validate_visible(fatal=True, timeout=1)
