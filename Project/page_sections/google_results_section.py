@@ -19,7 +19,7 @@ class GoogleResultSection(SWADLPageSection):
             index=0,
             name="google_icon",
             parent=self,
-            selector='img',
+            selector='svg',
             validation=VALIDATE_VISIBLE,
         )
         self.search_box = SWADLControl(
