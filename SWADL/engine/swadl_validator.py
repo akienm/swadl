@@ -110,6 +110,7 @@ class SWADLValidator(SWADLBase):
             test=None,  # this is the method like logical_test_equal()
             timeout=None,
         ):
+        pass
 
 
     @staticmethod
