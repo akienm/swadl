@@ -128,5 +128,10 @@ class HDHSHeader(SWADLPageSection):
         # self.load_page()
         # self.search_box.set_value(value=self.test_data[SEARCH_KEY])
         # self.search_box.submit()
+        self.load_page()
+        self.more.mouseover()
+        # import pdb ; pdb.set_trace()
+
+        self.more.click()
         for item in list_of_controls:
             item.validate_visible(timeout=1)

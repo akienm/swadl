@@ -80,7 +80,15 @@ class SWADLPageSection(SWADLBase):
                 f"{self.url}"
             )
 
+        self.sleep(0.5)
+        self.maximize()
+        self.sleep(0.5)
         self.validate_loaded(timeout=timeout)
+
+    def maximize(self):
+        # Purpose: Maximize Browser window.
+        # Magic: Makes use of webdriver maximize
+        self.driver.maximize_window()
 
     def validate_controls(self, controls=None, validation=None, **kwargs):
         # Purpose: Validates a collection of controls.

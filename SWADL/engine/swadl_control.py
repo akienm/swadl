@@ -460,6 +460,9 @@ class SWADLControl(SWADLBase):
                 timeout = 0
             self._elements = self.get_elements(end_time=end_time, timeout=timeout)
 
+    # if _retry gets an exception, we'll put it here. it can be checked after the last one
+    _exception_from_refresh = None
+
     def _retry_until_expected_met(self, call, end_time=None, expected=None, force=False,
                                   timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
         # Purpose: Wraps the webdriver call in a time-based retry mechanism (retry until match or
@@ -471,6 +474,7 @@ class SWADLControl(SWADLBase):
         start_time = time.time()
         while True:
             try:
+                self._exception_from_refresh = None
                 result = call()
             except StaleElementReferenceException:
                 print("STALE ELEMENT EXCEPTION===========================================================")
@@ -481,6 +485,8 @@ class SWADLControl(SWADLBase):
                 self._refresh(force=True)
                 result = False
                 continue
+            except Exception as e:
+                self._exception_from_refresh = e
             # if expected is None, we're not awaiting a specific response
             if expected is None:
                 break
@@ -675,3 +681,9 @@ class SWADLControl(SWADLBase):
             validation_name=UNIQUE,
             **kwargs,
         )
+
+    def mouseover(self, timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
+        # TODO: FINISH BUILDING THIS OUT!
+        # JUST HOW DO WE KNOW IF WE WORKED?
+        # RETRY?
+        self.actions.move_to_element(self.get_elements(timeout=timeout)[0]).perform()
