@@ -130,7 +130,6 @@ class HDHSHeader(SWADLPageSection):
         # self.search_box.submit()
         self.load_page()
         self.more.mouseover()
-        # import pdb ; pdb.set_trace()
 
         self.more.click()
         for item in list_of_controls:
