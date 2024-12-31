@@ -102,16 +102,41 @@ class SWADLValidator(SWADLBase):
     def make_validation(
             cls,
             arguments=None,   # eg {'x':None, 'y':None},
+            # arguments["expected"] is assumed
+            # arguments["fatal"] is expected
+            # arguments["timeout"] is assumed
+            # arguments["end_time"] is assumed
             exception_class=None,
             expected=None,
             fatal=False,
-            logging_channel=None,  # eg logging.DEBUG,
+            logging_method_fail=None,  # eg logging.DEBUG,
+            logging_method_pass=None,  # eg logging.DEBUG,
             name=None,  # causes self lookup
-            test=None,  # this is the method like logical_test_equal()
+            retry_delay=0,
+            retry_method=None,
             timeout=None,
+            validation_method=None,  # this is the method like logical_test_equal()
         ):
         pass
 
+    assert_true = SWADLValidator.make_validation(
+        arguments=["exper"],
+        exception_class=AssertionError,
+        expected=True,
+        fatal=False,
+        logging_method_fail=logging.error,
+        logging_method_pass=logging.debug,
+        name='assert_true',
+        retry_delay=0,
+        retry_method=None,
+        validation_method=SWADLValidator.validate_true,
+    )
+
+    def validate_true(self, exper):
+        return True if exper else False
+
+    def validate_false(self, exper):
+        return False if exper else True
 
     @staticmethod
     def _process_stack_trace(exc_info=None):
