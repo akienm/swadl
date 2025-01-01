@@ -70,6 +70,8 @@ class SWADLPageSection(SWADLBase):
 
     def load_page(self, url=None, timeout=cfgdict[SELENIUM_PAGE_DEFAULT_TIMEOUT]):
         # Purpose: Load the specified page and validate that it was loaded.
+        self.test_data[self.__class__.__name__+" LOAD TIME"] = self.get_timestamp()
+
         if not self.validate_loaded(fatal=False, report=False, timeout=0.5):
             url = url or self.url
             assert url, "Unable to Section.open() with the url of 'None'."
@@ -156,6 +158,7 @@ class SWADLPageSection(SWADLBase):
         # Purpose: Validates that all the specified controls are visible
         # Inputs: (collection)controls - controls to verify. If not specified, tries to use
         #                                self.validate_loaded_queue
+        self.test_data[self.__class__.__name__+".validate_loaded"] = False
         if timeout is None:
             if hasattr(self, SELENIUM_PAGE_DEFAULT_TIMEOUT):
                 timeout = getattr(self, SELENIUM_PAGE_DEFAULT_TIMEOUT)
@@ -170,5 +173,5 @@ class SWADLPageSection(SWADLBase):
             validation={VALIDATE_VISIBLE: True},
             **kwargs,
         )
-        self.test_data[f'{self.name} loaded ok'] = result
+        self.test_data[self.__class__.__name__+".validate_loaded"] = True
         return result

@@ -21,14 +21,6 @@ class HDHSHeader(SWADLPageSection):
             validation={VALIDATE_VISIBLE: True},
         )
 
-        self.banner = SWADLControl(
-            is_text="Adoption Policies and Fees",
-            name="adoption policies and fees",
-            parent=self,
-            selector='.dir-ltr',
-            validation={VALIDATE_VISIBLE: True},
-        )
-
         self.HALT_spay_neuter = SWADLControl(
             is_text="H.A.L.T. Spay Neuter",
             name="H.A.L.T. spay neuter",
@@ -109,11 +101,17 @@ class HDHSHeader(SWADLPageSection):
         )
 
         # used by self.validate_loaded()
-        self.validate_loaded_queue = [self.banner, self.more]
+        self.validate_loaded_queue = [self.high_desert_humane_society, self.more]
 
     def hdhs_header_validate_controls(self, test_data):
+        # Purpose: loads page, validate controls
+        # Keys: None
+        # Emits: "GoogleSearchSection loaded ok": True" = page load validated
+
         list_of_controls = [
-            self.banner,
+            self.high_desert_humane_society,
+            self.HALT_spay_neuter,
+            self.adoption_policies_and_fees,
             self.more,
             self.services,
             self.donations,
@@ -122,21 +120,12 @@ class HDHSHeader(SWADLPageSection):
             self.news_and_videos
         ]
 
-        # Purpose: loads page if it's not loaded
-        # Keys: SEARCH_KEY
-        # Emits: "GoogleSearchSection loaded ok": True" = page load validated
 
         self.load_page()
         self.driver.maximize_window()
-        from selenium.webdriver.common.action_chains import ActionChains
-        ActionChains(self.driver).move_to_element(self.more._elements[0]).perform()
-        # self.search_box.set_value(value=self.test_data[SEARCH_KEY])
-        # self.search_box.submit()
 
-        self.load_page()
         self.more.mouseover()
-
-        self.more.click()
+        # self.more.click()
 
         for item in list_of_controls:
             item.validate_visible(timeout=1)
