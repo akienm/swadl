@@ -125,12 +125,18 @@ class HDHSHeader(SWADLPageSection):
         # Purpose: loads page if it's not loaded
         # Keys: SEARCH_KEY
         # Emits: "GoogleSearchSection loaded ok": True" = page load validated
-        # self.load_page()
+
+        self.load_page()
+        self.driver.maximize_window()
+        from selenium.webdriver.common.action_chains import ActionChains
+        ActionChains(self.driver).move_to_element(self.more._elements[0]).perform()
         # self.search_box.set_value(value=self.test_data[SEARCH_KEY])
         # self.search_box.submit()
+
         self.load_page()
         self.more.mouseover()
 
         self.more.click()
+
         for item in list_of_controls:
             item.validate_visible(timeout=1)
