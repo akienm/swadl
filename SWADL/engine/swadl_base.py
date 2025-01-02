@@ -6,6 +6,7 @@ import inspect
 import logging
 import time
 import traceback
+from selenium.webdriver.common.action_chains import ActionChains
 
 from SWADL.engine import bannerizer
 from SWADL.engine.swadl_cfg import cfgdict
@@ -73,6 +74,7 @@ class SWADLBase(object):
         # these are to make this functionality available to every object using it
         self.cfgdict = cfgdict
         self.driver = self.cfgdict[DRIVER]
+        self.actions = ActionChains(self.driver)
         self.test_data = self.cfgdict[TEST_DATA]
 
         # sort out substitutions. If this has been specified, it's an instance override, so
@@ -677,3 +679,15 @@ class SWADLBase(object):
     def expect_not_in(self, member=None, container=None, **kwargs):
         # Description: records warning if condition not met
         return self._test_not_in_common(member=member, container=container, **kwargs)
+
+    _DEFAULT_POLLING_INTERVAL = 0.01
+    @staticmethod
+    def sleep(seconds=None):
+        """
+        Yields CPU time for other processes during timeouts. The 0.3 seconds
+        default value is set via _DEFAULT_POLLING_INTERVAL.
+        used for yielding CPU time to the application under test.
+        """
+        if seconds is None:
+            seconds = self._DEFAULT_POLLING_INTERVAL
+        time.sleep(seconds)
