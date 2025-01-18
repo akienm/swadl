@@ -60,6 +60,8 @@ class SWADLBase(object):
     #          all calls can share that one as well.
     #          WARNING: ALWAYS BEWARE OF KEY COLLISIONS, THAT'S WHY WE HAVE test_data.dump()!
 
+    save_screen_shots = False
+
     name = None
     _logger = None
 
