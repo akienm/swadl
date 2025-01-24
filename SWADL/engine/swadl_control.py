@@ -236,9 +236,6 @@ class SWADLControl(SWADLBase):
             - timeout (float, default=20) - How long until we give up looking for a match
             _ **kwargs - Are applied to the object as object properties before acting.
         """
-        if force:
-            self.clear_cached_status()
-
         self.apply_kwargs(kwargs)
         end_time = end_time if end_time else time.time() + timeout
         processed_selector = self.resolve_substitutions(self.selector)
@@ -255,7 +252,8 @@ class SWADLControl(SWADLBase):
                     (self._cache['raw_elements'] != new_raw_elements) or
                     (self._cache['is_text'] != self.is_text) or
                     (self._cache['has_text'] != self.has_text) or
-                    (self._cache['index'] != self.index)
+                    (self._cache['index'] != self.index) or
+                    (force == True)
                 )
                 if refresh:
                     self.clear_cached_status()
@@ -325,10 +323,9 @@ class SWADLControl(SWADLBase):
         self._cache['status'][VALUE] = None
 
         how_many = len(self._cache['filtered_elements'])
-        exist = how_many > 0
+        self._cache['status'][EXIST] = how_many > 0
 
-        if exist:
-            self._cache['status'][EXIST] = True
+        if self._cache['status'][EXIST]:
             self._cache['status'][UNIQUE] = how_many == 1
         if self._cache['status'][UNIQUE]:
             element=self._cache['filtered_elements'][0]
