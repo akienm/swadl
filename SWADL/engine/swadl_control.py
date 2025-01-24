@@ -321,6 +321,7 @@ class SWADLControl(SWADLBase):
         self._cache['status'][VISIBLE] = None
         self._cache['status'][ENABLED] = None
         self._cache['status'][VALUE] = None
+        self._cache['status'][ACTIONABLE] = None
 
         how_many = len(self._cache['filtered_elements'])
         self._cache['status'][EXIST] = how_many > 0
@@ -332,7 +333,8 @@ class SWADLControl(SWADLBase):
             self._cache['status'][VISIBLE]=element.is_displayed()
             self._cache['status'][ENABLED]=element.is_enabled()
             self._cache['status'][VALUE]=element.text
-
+            if self._cache['status'][VISIBLE] and self._cache['status'][ENABLED]:
+                self._cache['status'][ACTIONABLE]
     def submit(self, end_time=None, fatal=False, force=False,
                timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
         # Purpose: Sends submit to the control
