@@ -219,8 +219,12 @@ class SWADLControl(SWADLBase):
         return self._cache['status'][CLICK]
 
     # noinspection PyBroadException
-    def get_elements(self, end_time=None, timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT],
-                     **kwargs):
+    def get_elements(self,
+                     end_time=None,
+                     force=False,
+                     timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT],
+                     **kwargs
+                     ):
         """
         Purpose: Fetches elements based on self.selector, self.index, self.is_text and
                  self.has_text (is_text will win if both are present)
@@ -228,9 +232,13 @@ class SWADLControl(SWADLBase):
             - end_time (float time.time()+timeout) - Passed from other methods also doing
                        timeout operations. So we don't have to be constantly recalculating the
                        end time.
+            - force (bool) - force update by clearing the cache
             - timeout (float, default=20) - How long until we give up looking for a match
             _ **kwargs - Are applied to the object as object properties before acting.
         """
+        if force:
+            self.clear_cached_status()
+
         self.apply_kwargs(kwargs)
         end_time = end_time if end_time else time.time() + timeout
         processed_selector = self.resolve_substitutions(self.selector)
@@ -308,10 +316,8 @@ class SWADLControl(SWADLBase):
             'index':None,
         }
 
-    def get_status(self, timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
-        self.clear_cached_status()
-
-        self.get_elements(timeout=timeout)
+    def get_status(self, force=True, timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
+        self.get_elements(force=force, timeout=timeout, **kwargs)
         self._cache['status'][EXIST] = False
         self._cache['status'][UNIQUE] = False
         self._cache['status'][VISIBLE] = None
