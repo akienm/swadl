@@ -13,33 +13,35 @@ class HDHSHeader(SWADLPageSection):
         super().__init__(name=name, **kwargs)
         self.url = "https://www.highdeserthumane.org/"
 
+        _SPAN_TAG_FOR_MENU_ITEMS = 'span.text-content.element-text-container.vertically-centered.dir-ltr'
+
         self.high_desert_humane_society = SWADLControl(
             is_text="High Desert Humane Society",
-            name="high desert humane society",
+            name="high_desert_humane_society",
             parent=self,
             selector='span',
             validation={VALIDATE_VISIBLE: True},
         )
 
         self.HALT_spay_neuter = SWADLControl(
-            is_text="H.A.L.T. Spay Neuter",
-            name="H.A.L.T. spay neuter",
+            is_text="H.A.L.T. spay & neuter",
+            name="HALT_spay_neuter",
             parent=self,
-            selector='.label-text-bold',
+            selector=_SPAN_TAG_FOR_MENU_ITEMS,
             validation={VALIDATE_VISIBLE: True},
         )
 
         self.adoption_policies_and_fees = SWADLControl(
             is_text="Adoption Policies and Fees",
-            name="adoption policies and fees",
+            name="adoption_policies_and_fees",
             parent=self,
-            selector='.dir-ltr',
+            selector=_SPAN_TAG_FOR_MENU_ITEMS,
             validation={VALIDATE_VISIBLE: True},
         )
 
         self.monthly_rabies_vaccination_clinics_information = SWADLControl(
             is_text="Monthly Rabies Vaccination Clinics Information",
-            name="monthly rabies vaccination clinics information",
+            name="monthly_rabies_vaccination_clinics_information",
             parent=self,
             selector='.label-text-bold',
             validation={VALIDATE_VISIBLE: True},
@@ -47,7 +49,7 @@ class HDHSHeader(SWADLPageSection):
 
         self.about_us = SWADLControl(
             is_text="About Us",
-            name="about us",
+            name="about_us",
             parent=self,
             selector='.dir-ltr',
             validation={VALIDATE_VISIBLE: True},
@@ -61,11 +63,13 @@ class HDHSHeader(SWADLPageSection):
             validation={VALIDATE_VISIBLE: True},
         )
 
+        _DIV_TAG_FOR_MORE = 'div.page-title.text-overflow'
+
         self.services = SWADLControl(
             is_text="Services",
             name="services",
             parent=self,
-            selector='#body-element',
+            selector=_DIV_TAG_FOR_MORE,
             validation={VALIDATE_VISIBLE: False},
         )
 
@@ -73,7 +77,7 @@ class HDHSHeader(SWADLPageSection):
             is_text="Donations",
             name="donations",
             parent=self,
-            selector='#body-element',
+            selector=_DIV_TAG_FOR_MORE,
             validation={VALIDATE_VISIBLE: False},
         )
 
@@ -81,7 +85,7 @@ class HDHSHeader(SWADLPageSection):
             is_text="Volunteer",
             name="volunteer",
             parent=self,
-            selector='div.page-title.text-overflow',
+            selector=_DIV_TAG_FOR_MORE,
             validation={VALIDATE_VISIBLE: False},
         )
 
@@ -89,14 +93,14 @@ class HDHSHeader(SWADLPageSection):
             is_text="Education",
             name="education",
             parent=self,
-            selector='div.page-title.text-overflow',
+            selector=_DIV_TAG_FOR_MORE,
             validation={VALIDATE_VISIBLE: False},
         )
         self.news_and_videos = SWADLControl(
             is_text="News and Videos",
             name="news_and_videos",
             parent=self,
-            selector='div.page-title.text-overflow',
+            selector=_DIV_TAG_FOR_MORE,
             validation={VALIDATE_VISIBLE: False},
         )
 

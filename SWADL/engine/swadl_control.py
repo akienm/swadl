@@ -91,12 +91,11 @@ class SWADLControl(SWADLBase):
     selector = None
 
     """
-    Data: _elements, _results
+    Data: _cache
     Purpose: These are used by the result caching that happens as controls are
-             analyzed and acted upon.
+             analyzed and acted upon. See def clear_cached_status(self)
     """
-    _elements = None
-    _results = None
+    _cache = {}
 
     def __init__(self, **kwargs):
         """
@@ -213,15 +212,19 @@ class SWADLControl(SWADLBase):
                (See click() for more information)
         """
         try:
-            self._elements[0].click()
-            self._results[CLICK] = True
+            self._cache['filtered_elements'][0].click()
+            self._cache['status'][CLICK] = True
         except (TypeError, IndexError):
-            self._results[CLICK] = False
-        return self._results[CLICK]
+            self._cache['status'][CLICK] = False
+        return self._cache['status'][CLICK]
 
     # noinspection PyBroadException
-    def get_elements(self, end_time=None, timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT],
-                     **kwargs):
+    def get_elements(self,
+                     end_time=None,
+                     force=False,
+                     timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT],
+                     **kwargs
+                     ):
         """
         Purpose: Fetches elements based on self.selector, self.index, self.is_text and
                  self.has_text (is_text will win if both are present)
@@ -229,37 +232,64 @@ class SWADLControl(SWADLBase):
             - end_time (float time.time()+timeout) - Passed from other methods also doing
                        timeout operations. So we don't have to be constantly recalculating the
                        end time.
+            - force (bool) - force update by clearing the cache
             - timeout (float, default=20) - How long until we give up looking for a match
             _ **kwargs - Are applied to the object as object properties before acting.
         """
         self.apply_kwargs(kwargs)
         end_time = end_time if end_time else time.time() + timeout
         processed_selector = self.resolve_substitutions(self.selector)
-        processed_list = []
+
         while True:
             try:
                 # The explicit reference here forces everything to be a CSS based selector.
                 # TODO: Use prefixes instead, such as css= or xpath=. Add that logic here.
-                raw_element_list = self.driver.find_elements(By.CSS_SELECTOR, processed_selector)
-                processed_list = []
 
-                if self.is_text:
-                    for element in raw_element_list:
-                        if self.is_text == element.text:
-                            processed_list.append(element)
-                elif self.has_text:
-                    for element in raw_element_list:
-                        if self.has_text in element.text:
-                            processed_list.append(element)
-                else:
-                    processed_list = raw_element_list
-                if self.index is not None:
-                    assert len(processed_list) > self.index, (
-                        f"Index of {self.index} into the list of matching controls is "
-                        f"invalid, the number of elements was {len(processed_list)}."
-                    )
-                    processed_list = [processed_list[self.index]]
-                if processed_list:
+                # first we get the current list of matching raw elements
+                new_raw_elements = self.driver.find_elements(By.CSS_SELECTOR, processed_selector)
+                # now we check and see if anything has changed from last time
+                refresh = (
+                    (self._cache['raw_elements'] != new_raw_elements) or
+                    (self._cache['is_text'] != self.is_text) or
+                    (self._cache['has_text'] != self.has_text) or
+                    (self._cache['index'] != self.index) or
+                    (force == True)
+                )
+                if refresh:
+                    self.clear_cached_status()
+                    self._cache['selector'] = self.selector
+                    self._cache['processed_selector'] = processed_selector
+                    self._cache['is_text'] = self.is_text
+                    self._cache['has_text'] = self.has_text
+                    self._cache['index'] = self.index
+                    self._cache['raw_elements'] = new_raw_elements
+                    if self.is_text:
+                        for element in self._cache['raw_elements']:
+                            text = element.text
+                            if text not in self._cache['unique_text_values']:
+                                self._cache['unique_text_values'].append(text)
+                            if self.is_text == text:
+                                self._cache['filtered_elements'].append(element)
+                                break
+                    elif self.has_text:
+                        for element in self._cache['raw_elements']:
+                            text = element.text
+                            if text not in self._cache['unique_text_values']:
+                                self._cache['unique_text_values'].append(text)
+                            if self.is_text in text:
+                                self._cache['filtered_elements'].append(element)
+                                break
+                    else:
+                        self._cache['filtered_elements'] = self._cache['raw_elements']
+
+                    if self.index is not None:
+                        assert self.index < 0 or len(self._cache['filtered_elements']) > self.index, (
+                            f"Index of {self.index} into the list of matching controls is "
+                            f"invalid, the number of elements was {self._cache['filtered_elements']}."
+                        )
+                        self._cache['filtered_elements'] = [self._cache['filtered_elements'][self.index]]
+
+                if self._cache['filtered_elements']:
                     break
             except Exception:
                 # we do not care what errors occur, just keep going and retry
@@ -268,12 +298,58 @@ class SWADLControl(SWADLBase):
                 # we do care whether we've gone past our end time. But performing this test
                 # here, rather than at the top, means we go thru the loop at least once.
                 break
-        return processed_list
+        return self._cache['filtered_elements']
 
     def clear_cached_status(self):
         # Purpose: Reset the cache data to blank. Will cause next option to re-fetch
-        self._elements = []
-        self._results = {}
+        self._cache = {
+            'status': {},
+            'raw_elements': [],
+            'filtered_elements': [],
+            'unique_text_values': [],
+            'selector': None,
+            'processed_selector': None,
+            'is_text': None,
+            'has_text': None,
+            'index':None,
+        }
+
+    def get_status(self, force=True, timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
+        self.get_elements(force=force, timeout=timeout, **kwargs)
+        self._cache['status'][EXIST] = False
+        self._cache['status'][UNIQUE] = False
+        self._cache['status'][VISIBLE] = None
+        self._cache['status'][ENABLED] = None
+        self._cache['status'][VALUE] = None
+
+        how_many = len(self._cache['filtered_elements'])
+        self._cache['status'][EXIST] = how_many > 0
+
+        if self._cache['status'][EXIST]:
+            self._cache['status'][UNIQUE] = how_many == 1
+        if self._cache['status'][UNIQUE]:
+            element=self._cache['filtered_elements'][0]
+            self._cache['status'][VISIBLE]=element.is_displayed()
+            self._cache['status'][ENABLED]=element.is_enabled()
+            self._cache['status'][VALUE]=element.text
+
+    def submit(self, end_time=None, fatal=False, force=False,
+               timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
+        # Purpose: Sends submit to the control
+        end_time, element_list = self._check_actionable(
+            end_time=end_time,
+            force=force,
+            kwargs=kwargs,
+            timeout=timeout
+        )
+        if len(element_list) > 0:
+            element_list[0].submit(**self._remove_keys_webdriver_doesnt_like(kwargs))
+        else:
+            self.require_true(
+                exper=element_list,
+                fatal=fatal,
+                message="Failed be able to submit"
+            )
 
     def get_exist(self, end_time=None, expected=True, force=True,
                   timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
@@ -352,24 +428,6 @@ class SWADLControl(SWADLBase):
             )
         return found_elements  # because we were successful if we didn't throw an error
 
-    def submit(self, end_time=None, fatal=False, force=False,
-               timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
-        # Purpose: Sends submit to the control
-        end_time, element_list = self._check_actionable(
-            end_time=end_time,
-            force=force,
-            kwargs=kwargs,
-            timeout=timeout
-        )
-        if len(element_list) > 0:
-            element_list[0].submit(**self._remove_keys_webdriver_doesnt_like(kwargs))
-        else:
-            self.require_true(
-                exper=element_list,
-                fatal=fatal,
-                message="Failed be able to submit"
-            )
-
     def _get_exist(self, end_time=None, expected=None, force=True,
                    timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT]):
         # Purpose: Returns the result of testing the existence of the control
@@ -394,7 +452,7 @@ class SWADLControl(SWADLBase):
             timeout=timeout,
         )
         if expected is None and result:
-            result = self._results[VALUE]
+            result =  self._cache['status'][VALUE]
         return result, elapsed
 
     def _get_visible(self, end_time=None, expected=None, force=False,
@@ -417,40 +475,40 @@ class SWADLControl(SWADLBase):
         # Purpose: Helper that performs the actual comparison to get the enabled state.
         #          Intended to be a helper method, for internal use
         try:
-            self._results[ENABLED] = self._elements[0].is_enabled()
+            self._cache['status'][ENABLED] = self._cache['filtered_elements'][0].is_enabled()
         except TypeError:
-            self._results[ENABLED] = False
-        return self._results[ENABLED]
+            self._cache['status'][ENABLED] = False
+        return  self._cache['status'][ENABLED]
 
     def _query_exist(self):
         # Purpose: Helper that performs the actual comparison to get the exist state.
         #          Intended to be a helper method, for internal use
-        self._results[EXIST] = bool(self._elements)
-        return self._results[EXIST]
+        self._cache['status'][EXIST] = bool(self._cache['filtered_elements'])
+        return  self._cache['status'][EXIST]
 
     def _query_unique(self):
         # Purpose: Helper that performs the actual comparison to get the unique state.
         #          Intended to be a helper method, for internal use
-        self._results[UNIQUE] = len(self._elements) == 1
-        return self._results[UNIQUE]
+        self._cache['status'][UNIQUE] = len(self._cache['filtered_elements']) == 1
+        return  self._cache['status'][UNIQUE]
 
     def _query_value(self):
         # Purpose: Helper that performs the actual comparison to get the value.
         #          Intended to be a helper method, for internal use
         try:
-            self._results[VALUE] = self._elements[0].text
+            self._cache['status'][VALUE] = self._cache['filtered_elements'][0].text
         except (TypeError, IndexError):
-            self._results[VALUE] = None
-        return self._results[VALUE]
+            self._cache['status'][VALUE] = None
+        return  self._cache['status'][VALUE]
 
     def _query_visible(self):
         # Purpose: Helper that performs the actual comparison to get the visible state.
         #          Intended to be a helper method, for internal use
         try:
-            self._results[VISIBLE] = self._elements[0].is_displayed()
+            self._cache['status'][VISIBLE] = self._cache['filtered_elements'][0].is_displayed()
         except (TypeError, IndexError):
-            self._results[VISIBLE] = False
-        return self._results[VISIBLE]
+            self._cache['status'][VISIBLE] = False
+        return  self._cache['status'][VISIBLE]
 
     def _refresh(self, end_time=None, expected=None, force=False, timeout=0):
         # Purpose: Reloads the element list. Intended to be a helper method, for internal use
@@ -458,7 +516,7 @@ class SWADLControl(SWADLBase):
             self.clear_cached_status()
             if expected is False:
                 timeout = 0
-            self._elements = self.get_elements(end_time=end_time, timeout=timeout)
+            self.get_elements(end_time=end_time, timeout=timeout)
 
     # if _retry gets an exception, we'll put it here. it can be checked after the last one
     _exception_from_refresh = None
@@ -536,12 +594,12 @@ class SWADLControl(SWADLBase):
                     '< 0.0001 seconds' if elapsed_time < 0.0001 else
                     f'{round(elapsed_time, 4)} seconds'
                 )
+            report_me = None
             if not result:
-                file_name = f'FAILURE_{self.get_timestamp()}.png'
-                self.driver.save_screenshot(file_name)
-                report_me = f'    saved image: {file_name},\n'
-            else:
-                report_me = ''
+                if self.save_screen_shots:
+                    file_name = f'FAILURE_{self.get_timestamp()}.png'
+                    self.driver.save_screenshot(file_name)
+                    report_me = f'    saved image: {file_name},\n'
             message_dict = SWADLDict()
             message_dict['result'] = "PASSED" if result else "FAILED"
             message_dict['for control'] = self.get_name()
@@ -549,11 +607,18 @@ class SWADLControl(SWADLBase):
             message_dict['is_text'] = self.is_text
             message_dict['has_text'] = self.has_text
             message_dict['index'] = self.index
+            self.get_status(timeout=0)
+            filtered_element_count = len(self._cache['filtered_elements'])
+            message_dict['# filtered elements'] = filtered_element_count
+            message_dict['control status cache'] = self._cache['status']
+            message_dict['# raw elements'] = len(self._cache['raw_elements'])
+            message_dict['unique text found'] = self._cache['unique_text_values']
             message_dict['validation_name'] = validation_name
             message_dict['expected'] = expected
             message_dict['elapsed_time'] = elapsed_time
             message_dict['fatal'] = fatal
-            message_dict['report_me'] = report_me
+            if report_me:
+                message_dict['report_me'] = report_me
             message_dict['comments'] = comments
             message = self.bannerize(data=message_dict, title="SWADL Validation Result")
             cfgdict[RESULT_LOG].add(message)
@@ -643,7 +708,7 @@ class SWADLControl(SWADLBase):
         result, elapsed_time = self._get_value(
             end_time=end_time, expected=expected_to_test, force=force, timeout=timeout
         )
-        comments = f'expected: "{expected_to_test}", actual: "{self._results[VALUE]}"'
+        comments = f'expected: "{expected_to_test}", actual: "{self._cache["status"][VALUE]}"'
         return self._validate(
             comments=comments,
             elapsed_time=elapsed_time,

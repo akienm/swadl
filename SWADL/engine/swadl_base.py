@@ -53,6 +53,19 @@ class SWADLBase(object):
     # Purpose: Base class for UI interactive code. Wraps interaction with webdriver
     # Notes: Adds cfgdict and driver to all UI control classes
 
+    substitution_sources = None
+    # Purpose: on a per item basis, allows us to set dictionaries that will be used to try and resolve
+    #          f-string type substitutions (by default self.__dict__ is the only one specified, but
+    #          if the cfgdict[SUBSTITUTION_SOURCES] exists and contains a list of dictionaries,
+    #          all calls can share that one as well.
+    #          WARNING: ALWAYS BEWARE OF KEY COLLISIONS, THAT'S WHY WE HAVE test_data.dump()!
+
+    save_screen_shots = False
+
+    name = None
+    _logger = None
+
+    #######################################################################
     def __init__(self, name=None, substitution_sources=None, **kwargs):
         # Purpose: Initializes the instance, applies unused kwargs
         # Inputs: - name - The name of this object. Used for reporting. REQUIRED!

@@ -36,7 +36,7 @@ class Output(SWADLBase):
         if not self.writing_done:
             if not isinstance(stuff_to_add, (list, tuple)):
                 stuff_to_add = [stuff_to_add]
-            with open(self.file_name, "a") as handle:
+            with open(self.file_name, "a", encoding='utf-8') as handle:
                 for line in stuff_to_add:
                     handle.write(f'{self.get_timestamp()}::{line}\n')
 
