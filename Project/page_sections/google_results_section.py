@@ -19,7 +19,7 @@ class GoogleResultSection(SWADLPageSection):
             index=0,
             name="google_icon",
             parent=self,
-            selector='img',
+            selector='svg',
             validation=VALIDATE_VISIBLE,
         )
         self.search_box = SWADLControl(
@@ -47,6 +47,8 @@ class GoogleResultSection(SWADLPageSection):
         #        SEARCH_RESULT_TITLES_LIST as list of titles which have the passed text
         # Notes: DESTROYS CONTENTS OF self.index!!!
         #        Uses has_text rather than is_text
+        import pdb ; pdb.set_trace()
+
         self.validate_loaded()  # this line logs entry to this page in the test_data
 
         raw_elements = f'{self.name} raw matching elements'

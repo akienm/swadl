@@ -100,93 +100,15 @@ class SWADLBase(object):
             for item in cfgdict[SUBSTITUTION_SOURCES]:
                 self.substitution_sources.append(item)
 
+    #######################################################################
+    # Naming
+    name = None
+
     def __str__(self):
         # Purpose: adds the self.name to the base __str__() result
         base = super().__str__()
         return f'{base}/{self.get_name()}'
 
-    #######################################################################
-    def apply_kwargs(self, kwargs):
-        # Purpose: Makes otherwise unused kwargs pairs into members of `self`
-        # Inputs: (dict)kwargs: dictionary who's values we want to add
-        # We use this to add additional keys to an object that can be picked
-        # up later.
-        self.__dict__.update(**kwargs)
-
-    def bannerize(self, data=None, title=None):
-        # Purpose: This hooks bannerizer into the SWADL classes.
-        # See bannerizer.py for more information.
-        # Used for reporting.
-        if data is None:
-            data = self.__dict__
-        return bannerizer.bannerize(data=data, title=title)
-
-    def dump(self):
-        # Purpose: dump local contents for debugging
-        result = self.bannerize(data=self.__dict__, title=self.get_name())
-        print(result)
-        return result
-    #######################################################################
-
-    @property
-    def log(self):
-        # Purpose: To provide access to logs everywhere without another import
-        # returns a logger instance
-        # usage: self.log.debug('foo')
-        if not self.__class__._logger:
-            self.__class__._logger = logging.getLogger(__name__)
-        return self.__class__._logger
-
-    @classmethod
-    def get_timestamp(cls, time_to_format=None):
-        # Purpose: To have a standardized timestamp for anything that needs it.
-        # Optionally takes a datetime value, or uses now.
-        # Returns: yymmdd_hhmmss.xxxxxx as string
-        if time_to_format is None:
-            time_to_format = datetime.datetime.now()
-        return time_to_format.strftime("%Y%m%d_%H%M%S.%f")
-
-    #######################################################################
-    class _SafeDict(dict):
-        # Purpose: Fills in f-string style braced arguments from keys in the
-        #          dictionaries copied to cfgdict[SUBSTITUTION_SOURCES]
-        # Usage:
-        #    print("{a} {b} {c}".format_map(SafeDict("a": "1", "b": "2")))
-        #    "1 2 {C}"
-        #    Without rendering any errors
-        def __missing__(self, key):
-            # Purpose: Just substitutes the missing element back into the string
-            return '{' + key + '}'
-
-    def resolve_substitutions(self, in_string, substitution_sources=None):
-        # Purpose: Perform f-string style substitutions without errors for missing keys, and using
-        #          sources like global test data or other dicts to feed the substitution engine
-        # Inputs: - (str)in_string - the string to do substitutions on
-        #         - dict or list of dict - items to use for substitution
-
-        if not substitution_sources:
-            substitution_sources = self.substitution_sources
-
-        master_hash = self._SafeDict()
-        for item in substitution_sources:
-            master_hash.update(item)
-        master_hash.update(self.__dict__)
-
-        iterations_to_go = 20
-        result = in_string
-        before = in_string
-
-        # this loop is here so if we won't loop forever
-        # we stop as soon as it stops making changes.
-        while iterations_to_go > 0:
-            iterations_to_go -= 1
-            result = result.format_map(master_hash)
-            if result == before:
-                break
-            before = result
-        return result
-
-    #######################################################################
     def get_name(self):
         # Purpose: Returns the name of the thing
         # Notes: If self.parent is not None, prefixes the name with the parent's name
@@ -237,6 +159,113 @@ class SWADLBase(object):
         return result
 
     #######################################################################
+    def apply_kwargs(self, kwargs):
+        # Purpose: Makes otherwise unused kwargs pairs into members of `self`
+        # Inputs: (dict)kwargs: dictionary who's values we want to add
+        # We use this to add additional keys to an object that can be picked
+        # up later.
+        self.__dict__.update(**kwargs)
+
+    def bannerize(self, data=None, title=None):
+        # Purpose: This hooks bannerizer into the SWADL classes.
+        # See bannerizer.py for more information.
+        # Used for reporting.
+        if data is None:
+            data = self.__dict__
+        return bannerizer.bannerize(data=data, title=title)
+
+    def dump(self):
+        # Purpose: dump local contents for debugging
+        result = self.bannerize(data=self.__dict__, title=self.get_name())
+        print(result)
+        return result
+
+    @staticmethod
+    def timeout_remaining(end_time=None, timeout=0, minimum=1):
+        # Purpose: Return timeout remaining
+        # Args:
+        #     timeout (float, optional): expected timeout. Defaults to 0.
+        #     minimum (float, optional): minimum timeout. Defaults to 1.
+        time_now = time.time()
+        if not end_time:
+            end_time = time_now + timeout
+        if end_time < time_now:
+            end_time = time_now + minimum
+        return end_time - time_now
+
+    #######################################################################
+    # Logging
+    _logger = None
+
+    @property
+    def log(self):
+        # Purpose: To provide access to logs everywhere without another import
+        # returns a logger instance
+        # usage: self.log.debug('foo')
+        if not self.__class__._logger:
+            self.__class__._logger = logging.getLogger(__name__)
+        return self.__class__._logger
+
+    @classmethod
+    def get_timestamp(cls, time_to_format=None):
+        # Purpose: To have a standardized timestamp for anything that needs it.
+        # Optionally takes a datetime value, or uses now.
+        # Returns: yymmdd_hhmmss.xxxxxx as string
+        if time_to_format is None:
+            time_to_format = datetime.datetime.now()
+        return time_to_format.strftime("%Y%m%d_%H%M%S.%f")
+
+    #######################################################################
+    # Resolve Substitutions
+    substitution_sources = None
+
+    # Purpose: on a per item basis, allows us to set dictionaries that will be used to try and resolve
+    #          f-string type substitutions (by default self.__dict__ is the only one specified, but
+    #          if the cfgdict[SUBSTITUTION_SOURCES] exists and contains a list of dictionaries,
+    #          all calls can share that one as well.
+    #          WARNING: ALWAYS BEWARE OF KEY COLLISIONS, THAT'S WHY WE HAVE test_data.dump()!
+
+    class _SafeDict(dict):
+        # Purpose: Fills in f-string style braced arguments from keys in the
+        #          dictionaries copied to cfgdict[SUBSTITUTION_SOURCES]
+        # Usage:
+        #    print("{a} {b} {c}".format_map(SafeDict("a": "1", "b": "2")))
+        #    "1 2 {C}"
+        #    Without rendering any errors
+        def __missing__(self, key):
+            # Purpose: Just substitutes the missing element back into the string
+            return '{' + key + '}'
+
+    def resolve_substitutions(self, in_string, substitution_sources=None):
+        # Purpose: Perform f-string style substitutions without errors for missing keys, and using
+        #          sources like global test data or other dicts to feed the substitution engine
+        # Inputs: - (str)in_string - the string to do substitutions on
+        #         - dict or list of dict - items to use for substitution
+
+        if not substitution_sources:
+            substitution_sources = self.substitution_sources
+
+        master_hash = self._SafeDict()
+        for item in substitution_sources:
+            master_hash.update(item)
+        master_hash.update(self.__dict__)
+
+        iterations_to_go = 20
+        result = in_string
+        before = in_string
+
+        # this loop is here so if we won't loop forever
+        # we stop as soon as it stops making changes.
+        while iterations_to_go > 0:
+            iterations_to_go -= 1
+            result = result.format_map(master_hash)
+            if result == before:
+                break
+            before = result
+        return result
+
+    #######################################################################
+    # Key Management
     @staticmethod
     def _remove_keys(incoming_dict, list_of_keys=None):
         # Purpose: Remove keys from kwargs before passing them on. For instance, most webdriver
@@ -261,20 +290,8 @@ class SWADLBase(object):
         )
         return self._remove_keys(incoming_dict, keys_webdriver_doesnt_like)
 
-    @staticmethod
-    def timeout_remaining(end_time=None, timeout=0, minimum=1):
-        # Purpose: Return timeout remaining
-        # Args:
-        #     timeout (float, optional): expected timeout. Defaults to 0.
-        #     minimum (float, optional): minimum timeout. Defaults to 1.
-        time_now = time.time()
-        if not end_time:
-            end_time = time_now + timeout
-        if end_time < time_now:
-            end_time = time_now + minimum
-        return end_time - time_now
-
     #######################################################################
+    # Validations
     @staticmethod
     def _process_stack_trace(exc_info=None):
         # Purpose: Standardizes the traceback information
@@ -370,11 +387,11 @@ class SWADLBase(object):
         reporting_dict[RESULT] = "Failed to complete"  # overwritten later we hope :)
         reporting_dict[TIME_STARTED] = time.time()
         reporting_dict[TIME_FINISHED] = time.time()  # this is here just in case it doesn't finish
-        
+
         # now we do the compare, protected from any kind of unexpected data types or whatever
         try:
             reporting_dict[LOGICAL_RESULT] = reporting_dict[HELPER](reporting_dict)
-        except Exception as e: 
+        except Exception as e:
             # this next line re-raises the same class with additional data
             self.test_data[TEST_OBJECT].accumulated_failures.append(reporting_dict)
             raise e.__class__(
@@ -382,10 +399,10 @@ class SWADLBase(object):
                 self.bannerize(title=e.__class__.__name__, data=e.__dict__) + "\n" +
                 self.bannerize(self.cfgdict) + "\n"
             )
-        
+
         # and if that didn't blow up, now we finish up.
         reporting_dict[TIME_FINISHED] = time.time()
-        
+
         if reporting_dict[LOGICAL_RESULT]:
             reporting_dict[RESULT] = PASSED
         else:
@@ -405,7 +422,7 @@ class SWADLBase(object):
             elif caller.upper().startswith(EXPECT):
                 self.log.warning(message)
                 if reporting_dict[KWARGS].get(FATAL, False):
-                    raise Exception("A WARNING WAS MARKED AS FATAL, THIS SHOULDN'T BE!\n"+message)
+                    raise Exception("A WARNING WAS MARKED AS FATAL, THIS SHOULDN'T BE!\n" + message)
             else:
                 message = "UNKNOWN ORIGIN POINT FOR VALIDATION, THIS SHOULDN'T BE!\n" + message
                 self.log.error(message)
@@ -413,8 +430,8 @@ class SWADLBase(object):
 
         return reporting_dict[LOGICAL_RESULT]
 
-    ################################################################################
-
+    # -------------------------------------------------------------------------------
+    # Validation: Equal
     @staticmethod
     def _logical_test_equal(reporting_dict=None):
         # Purpose: performs the actual comparison
@@ -440,7 +457,8 @@ class SWADLBase(object):
         # Description: records a warning if condition not met
         return self._test_equal_common(x=x, y=y, **kwargs)
 
-    ################################################################################
+    # -------------------------------------------------------------------------------
+    # Validation: not equal
     @staticmethod
     def _logical_test_not_equal(reporting_dict=None):
         # Purpose: performs the actual comparison
@@ -466,7 +484,8 @@ class SWADLBase(object):
         # Description: records a warning if condition not met
         return self._test_equal_common(x=x, y=y, **kwargs)
 
-    ################################################################################
+    # -------------------------------------------------------------------------------
+    # Validation: true
     @staticmethod
     def _logical_test_true(reporting_dict=None):
         # Purpose: performs the actual comparison
@@ -492,7 +511,8 @@ class SWADLBase(object):
         # Description: records warning if condition not met
         return self._test_true_common(exper=exper, **kwargs)
 
-    ################################################################################
+    # -------------------------------------------------------------------------------
+    # Validation: false
     @staticmethod
     def _logical_test_false(reporting_dict=None):
         # Purpose: performs the actual comparison
@@ -517,7 +537,8 @@ class SWADLBase(object):
         # Description: records warning if condition not met
         return self._test_false_common(exper=exper, **kwargs)
 
-    ################################################################################
+    # -------------------------------------------------------------------------------
+    # Validation: is
     @staticmethod
     def _logical_test_is(reporting_dict=None):
         # Purpose: performs the actual comparison
@@ -542,7 +563,8 @@ class SWADLBase(object):
         # Description: records warning if condition not met
         return self._test_is_common(exper1=exper1, exper2=exper2, **kwargs)
 
-    ################################################################################
+    # -------------------------------------------------------------------------------
+    # Validation: is not
     @staticmethod
     def _logical_test_is_not(reporting_dict=None):
         # Purpose: performs the actual comparison
@@ -567,7 +589,8 @@ class SWADLBase(object):
         # Description: records warning if condition not met
         return self._test_is_not_common(exper1=exper1, exper2=exper2, **kwargs)
 
-    ################################################################################
+    # -------------------------------------------------------------------------------
+    # Validation: is none
     @staticmethod
     def _logical_test_is_none(reporting_dict=None):
         # Purpose: performs the actual comparison
@@ -592,7 +615,8 @@ class SWADLBase(object):
         # Description: records warning if condition not met
         return self._test_is_none_common(obj=obj, **kwargs)
 
-    ################################################################################
+    # -------------------------------------------------------------------------------
+    # Validation: is not none
     @staticmethod
     def _logical_test_is_not_none(reporting_dict=None):
         # Purpose: performs the actual comparison
@@ -617,7 +641,8 @@ class SWADLBase(object):
         # Description: records warning if condition not met
         return self._test_is_not_none_common(obj=obj, **kwargs)
 
-    ################################################################################
+    # -------------------------------------------------------------------------------
+    # Validation: in
     @staticmethod
     def _logical_test_in(reporting_dict=None):
         # Purpose: performs the actual comparison
@@ -642,7 +667,8 @@ class SWADLBase(object):
         # Description: records warning if condition not met
         return self._test_in_common(member=member, container=container, **kwargs)
 
-    ################################################################################
+    # -------------------------------------------------------------------------------
+    # Validation: not in
     @staticmethod
     def _logical_test_not_in(reporting_dict=None):
         # Purpose: performs the actual comparison
