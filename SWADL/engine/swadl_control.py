@@ -9,7 +9,8 @@ from selenium.webdriver.common.by import By
 
 from SWADL.engine.swadl_base import SWADLBase
 from SWADL.engine.swadl_cfg import cfgdict
-from SWADL.engine.swadl_constants import CACHE
+from SWADL.engine.swadl_constants import CACHE, RAW_ELEMENTS, IS_TEXT, HAS_TEXT, INDEX, PROCESSED_SELECTOR, \
+    UNIQUE_TEXT_VALUES, FILTERED_ELEMENTS, STATUS, ACTIONABLE
 from SWADL.engine.swadl_constants import CLICK
 from SWADL.engine.swadl_constants import ENABLED
 from SWADL.engine.swadl_constants import EXIST
@@ -212,11 +213,11 @@ class SWADLControl(SWADLBase):
                (See click() for more information)
         """
         try:
-            self._cache['filtered_elements'][0].click()
-            self._cache['status'][CLICK] = True
+            self._cache[FILTERED_ELEMENTS][0].click()
+            self._cache[STATUS][CLICK] = True
         except (TypeError, IndexError):
-            self._cache['status'][CLICK] = False
-        return self._cache['status'][CLICK]
+            self._cache[STATUS][CLICK] = False
+        return self._cache[STATUS][CLICK]
 
     # noinspection PyBroadException
     def get_elements(self,
@@ -249,47 +250,47 @@ class SWADLControl(SWADLBase):
                 new_raw_elements = self.driver.find_elements(By.CSS_SELECTOR, processed_selector)
                 # now we check and see if anything has changed from last time
                 refresh = (
-                    (self._cache['raw_elements'] != new_raw_elements) or
-                    (self._cache['is_text'] != self.is_text) or
-                    (self._cache['has_text'] != self.has_text) or
-                    (self._cache['index'] != self.index) or
+                    (self._cache[RAW_ELEMENTS] != new_raw_elements) or
+                    (self._cache[IS_TEXT] != self.is_text) or
+                    (self._cache[HAS_TEXT] != self.has_text) or
+                    (self._cache[INDEX] != self.index) or
                     (force == True)
                 )
                 if refresh:
                     self.clear_cached_status()
-                    self._cache['selector'] = self.selector
-                    self._cache['processed_selector'] = processed_selector
-                    self._cache['is_text'] = self.is_text
-                    self._cache['has_text'] = self.has_text
-                    self._cache['index'] = self.index
-                    self._cache['raw_elements'] = new_raw_elements
+                    self._cache[SELECTOR] = self.selector
+                    self._cache[PROCESSED_SELECTOR] = processed_selector
+                    self._cache[IS_TEXT] = self.is_text
+                    self._cache[HAS_TEXT] = self.has_text
+                    self._cache[INDEX] = self.index
+                    self._cache[RAW_ELEMENTS] = new_raw_elements
                     if self.is_text:
-                        for element in self._cache['raw_elements']:
+                        for element in self._cache[RAW_ELEMENTS]:
                             text = element.text
-                            if text not in self._cache['unique_text_values']:
-                                self._cache['unique_text_values'].append(text)
+                            if text not in self._cache[UNIQUE_TEXT_VALUES]:
+                                self._cache[UNIQUE_TEXT_VALUES].append(text)
                             if self.is_text == text:
-                                self._cache['filtered_elements'].append(element)
+                                self._cache[FILTERED_ELEMENTS].append(element)
                                 break
                     elif self.has_text:
-                        for element in self._cache['raw_elements']:
+                        for element in self._cache[RAW_ELEMENTS]:
                             text = element.text
-                            if text not in self._cache['unique_text_values']:
-                                self._cache['unique_text_values'].append(text)
+                            if text not in self._cache[UNIQUE_TEXT_VALUES]:
+                                self._cache[UNIQUE_TEXT_VALUES].append(text)
                             if self.is_text in text:
-                                self._cache['filtered_elements'].append(element)
+                                self._cache[FILTERED_ELEMENTS].append(element)
                                 break
                     else:
-                        self._cache['filtered_elements'] = self._cache['raw_elements']
+                        self._cache[FILTERED_ELEMENTS] = self._cache[RAW_ELEMENTS]
 
                     if self.index is not None:
-                        assert self.index < 0 or len(self._cache['filtered_elements']) > self.index, (
+                        assert self.index < 0 or len(self._cache[FILTERED_ELEMENTS]) > self.index, (
                             f"Index of {self.index} into the list of matching controls is "
-                            f"invalid, the number of elements was {self._cache['filtered_elements']}."
+                            f"invalid, the number of elements was {self._cache[FILTERED_ELEMENTS]}."
                         )
-                        self._cache['filtered_elements'] = [self._cache['filtered_elements'][self.index]]
+                        self._cache[FILTERED_ELEMENTS] = [self._cache[FILTERED_ELEMENTS][self.index]]
 
-                if self._cache['filtered_elements']:
+                if self._cache[FILTERED_ELEMENTS]:
                     break
             except Exception:
                 # we do not care what errors occur, just keep going and retry
@@ -298,43 +299,45 @@ class SWADLControl(SWADLBase):
                 # we do care whether we've gone past our end time. But performing this test
                 # here, rather than at the top, means we go thru the loop at least once.
                 break
-        return self._cache['filtered_elements']
+        return self._cache[FILTERED_ELEMENTS]
 
     def clear_cached_status(self):
         # Purpose: Reset the cache data to blank. Will cause next option to re-fetch
         self._cache = {
-            'status': {},
-            'raw_elements': [],
-            'filtered_elements': [],
-            'unique_text_values': [],
-            'selector': None,
-            'processed_selector': None,
-            'is_text': None,
-            'has_text': None,
-            'index':None,
+            STATUS: {},
+            RAW_ELEMENTS: [],
+            FILTERED_ELEMENTS: [],
+            UNIQUE_TEXT_VALUES: [],
+            SELECTOR: None,
+            PROCESSED_SELECTOR: None,
+            IS_TEXT: None,
+            HAS_TEXT: None,
+            INDEX:None,
         }
 
     def get_status(self, force=True, timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
         self.get_elements(force=force, timeout=timeout, **kwargs)
-        self._cache['status'][EXIST] = False
-        self._cache['status'][UNIQUE] = False
-        self._cache['status'][VISIBLE] = None
-        self._cache['status'][ENABLED] = None
-        self._cache['status'][VALUE] = None
-        self._cache['status'][ACTIONABLE] = None
+        self._cache[STATUS][EXIST] = False
+        self._cache[STATUS][UNIQUE] = False
+        self._cache[STATUS][VISIBLE] = None
+        self._cache[STATUS][ENABLED] = None
+        self._cache[STATUS][VALUE] = None
+        self._cache[STATUS][ACTIONABLE] = None
 
-        how_many = len(self._cache['filtered_elements'])
-        self._cache['status'][EXIST] = how_many > 0
+        how_many = len(self._cache[FILTERED_ELEMENTS])
+        self._cache[STATUS][EXIST] = how_many > 0
 
-        if self._cache['status'][EXIST]:
-            self._cache['status'][UNIQUE] = how_many == 1
-        if self._cache['status'][UNIQUE]:
-            element=self._cache['filtered_elements'][0]
-            self._cache['status'][VISIBLE]=element.is_displayed()
-            self._cache['status'][ENABLED]=element.is_enabled()
-            self._cache['status'][VALUE]=element.text
-            if self._cache['status'][VISIBLE] and self._cache['status'][ENABLED]:
-                self._cache['status'][ACTIONABLE]
+        if self._cache[STATUS][EXIST]:
+            self._cache[STATUS][UNIQUE] = how_many == 1
+        if self._cache[STATUS][UNIQUE]:
+            element=self._cache[FILTERED_ELEMENTS][0]
+            self._cache[STATUS][VISIBLE]=element.is_displayed()
+            self._cache[STATUS][ENABLED]=element.is_enabled()
+            self._cache[STATUS][VALUE]=element.text
+            self._cache[STATUS][ACTIONABLE]=(
+                self._cache[STATUS][VISIBLE] and self._cache[STATUS][ENABLED]
+            )
+
     def submit(self, end_time=None, fatal=False, force=False,
                timeout=cfgdict[SELENIUM_CONTROL_DEFAULT_TIMEOUT], **kwargs):
         # Purpose: Sends submit to the control
@@ -454,7 +457,7 @@ class SWADLControl(SWADLBase):
             timeout=timeout,
         )
         if expected is None and result:
-            result =  self._cache['status'][VALUE]
+            result =  self._cache[STATUS][VALUE]
         return result, elapsed
 
     def _get_visible(self, end_time=None, expected=None, force=False,
@@ -477,40 +480,40 @@ class SWADLControl(SWADLBase):
         # Purpose: Helper that performs the actual comparison to get the enabled state.
         #          Intended to be a helper method, for internal use
         try:
-            self._cache['status'][ENABLED] = self._cache['filtered_elements'][0].is_enabled()
+            self._cache[STATUS][ENABLED] = self._cache[FILTERED_ELEMENTS][0].is_enabled()
         except TypeError:
-            self._cache['status'][ENABLED] = False
-        return  self._cache['status'][ENABLED]
+            self._cache[STATUS][ENABLED] = False
+        return  self._cache[STATUS][ENABLED]
 
     def _query_exist(self):
         # Purpose: Helper that performs the actual comparison to get the exist state.
         #          Intended to be a helper method, for internal use
-        self._cache['status'][EXIST] = bool(self._cache['filtered_elements'])
-        return  self._cache['status'][EXIST]
+        self._cache[STATUS][EXIST] = bool(self._cache[FILTERED_ELEMENTS])
+        return  self._cache[STATUS][EXIST]
 
     def _query_unique(self):
         # Purpose: Helper that performs the actual comparison to get the unique state.
         #          Intended to be a helper method, for internal use
-        self._cache['status'][UNIQUE] = len(self._cache['filtered_elements']) == 1
-        return  self._cache['status'][UNIQUE]
+        self._cache[STATUS][UNIQUE] = len(self._cache[FILTERED_ELEMENTS]) == 1
+        return  self._cache[STATUS][UNIQUE]
 
     def _query_value(self):
         # Purpose: Helper that performs the actual comparison to get the value.
         #          Intended to be a helper method, for internal use
         try:
-            self._cache['status'][VALUE] = self._cache['filtered_elements'][0].text
+            self._cache[STATUS][VALUE] = self._cache[FILTERED_ELEMENTS][0].text
         except (TypeError, IndexError):
-            self._cache['status'][VALUE] = None
-        return  self._cache['status'][VALUE]
+            self._cache[STATUS][VALUE] = None
+        return  self._cache[STATUS][VALUE]
 
     def _query_visible(self):
         # Purpose: Helper that performs the actual comparison to get the visible state.
         #          Intended to be a helper method, for internal use
         try:
-            self._cache['status'][VISIBLE] = self._cache['filtered_elements'][0].is_displayed()
+            self._cache[STATUS][VISIBLE] = self._cache[FILTERED_ELEMENTS][0].is_displayed()
         except (TypeError, IndexError):
-            self._cache['status'][VISIBLE] = False
-        return  self._cache['status'][VISIBLE]
+            self._cache[STATUS][VISIBLE] = False
+        return  self._cache[STATUS][VISIBLE]
 
     def _refresh(self, end_time=None, expected=None, force=False, timeout=0):
         # Purpose: Reloads the element list. Intended to be a helper method, for internal use
@@ -606,15 +609,15 @@ class SWADLControl(SWADLBase):
             message_dict['result'] = "PASSED" if result else "FAILED"
             message_dict['for control'] = self.get_name()
             message_dict['with selector'] = self.selector
-            message_dict['is_text'] = self.is_text
-            message_dict['has_text'] = self.has_text
-            message_dict['index'] = self.index
+            message_dict[IS_TEXT] = self.is_text
+            message_dict[HAS_TEXT] = self.has_text
+            message_dict[INDEX] = self.index
             self.get_status(timeout=0)
-            filtered_element_count = len(self._cache['filtered_elements'])
+            filtered_element_count = len(self._cache[FILTERED_ELEMENTS])
             message_dict['# filtered elements'] = filtered_element_count
-            message_dict['control status cache'] = self._cache['status']
-            message_dict['# raw elements'] = len(self._cache['raw_elements'])
-            message_dict['unique text found'] = self._cache['unique_text_values']
+            message_dict['control status cache'] = self._cache[STATUS]
+            message_dict['# raw elements'] = len(self._cache[RAW_ELEMENTS])
+            message_dict['unique text found'] = self._cache[UNIQUE_TEXT_VALUES]
             message_dict['validation_name'] = validation_name
             message_dict['expected'] = expected
             message_dict['elapsed_time'] = elapsed_time
