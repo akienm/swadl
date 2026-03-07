@@ -5,6 +5,7 @@ from selenium import webdriver
 
 # SWADL libs
 from SWADL.engine.swadl_config_dict import ConfigDict
+from SWADL.engine.swadl_driver import SeleniumDriver
 from SWADL.engine.swadl_constants import SELENIUM_BROWSER_OPTIONS
 from SWADL.engine.swadl_constants import SELENIUM_BROWSER_PLATFORM
 from SWADL.engine.swadl_constants import SELENIUM_BROWSER_VERSION
@@ -70,16 +71,12 @@ if cfgdict[SELENIUM_TEST_SET_FILE]:
 # Section: webdriver creation
 # Purpose: Sorts out the invocation parameters by browser
 def _create_chrome_webdriver():
-    # Method:
-    # Purpose: To create the chrome specific webdriver.
-    cfgdict[DRIVER] = webdriver.Chrome()
+    cfgdict[DRIVER] = SeleniumDriver(webdriver.Chrome())
     return cfgdict[DRIVER]
 
 
 def _create_edge_webdriver():
-    # Method:
-    # Purpose: To create the edge specific webdriver.
-    cfgdict[DRIVER] = webdriver.Edge()
+    cfgdict[DRIVER] = SeleniumDriver(webdriver.Edge())
     return cfgdict[DRIVER]
 
 

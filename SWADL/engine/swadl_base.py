@@ -6,8 +6,6 @@ import inspect
 import logging
 import time
 import traceback
-from selenium.webdriver.common.action_chains import ActionChains
-
 from SWADL.engine import bannerizer
 from SWADL.engine.swadl_cfg import cfgdict
 from SWADL.engine.swadl_constants import ASSERT
@@ -87,7 +85,7 @@ class SWADLBase(object):
         # these are to make this functionality available to every object using it
         self.cfgdict = cfgdict
         self.driver = self.cfgdict[DRIVER]
-        self.actions = ActionChains(self.driver)
+        self.actions = self.driver.actions
         self.test_data = self.cfgdict[TEST_DATA]
 
         # sort out substitutions. If this has been specified, it's an instance override, so
@@ -304,44 +302,6 @@ class SWADLBase(object):
             del (exc_info[-1])
         return exc_info
 
-    @staticmethod
-    def _this_code_is_unreachable_so_there(exc_info):
-        # now we're going to chop off all the nose2 traceback entries
-        line_added = False
-        recording = False
-        result = [DIVIDER + 'test part:']
-        for exc_item in exc_info:
-
-            # break this up into lines
-            interim_value = [exc_item.replace('\n', '')]
-
-            # see if we should start reporting yet or not
-            if ('Project\demos' in exc_item) and recording is False:
-                # as soon as 'Project/demos' appears, we want to capture
-                # all of the remaining entries
-                recording = True
-
-            # and if we've already started recording the lines
-            if recording:
-                # the 'spaces' appear before the file name, and before the
-                # 'code' line.
-                if TRACEBACK_SPACES in interim_value[0]:
-                    interim_value = interim_value[0].split(TRACEBACK_SPACES)
-                    interim_value[1] = TRACEBACK_SPACES + interim_value[1]
-
-                # finally, go thru the "sub-lines" and add them to the result
-                for item in interim_value:
-                    # check for blank lines and give those a miss
-                    if not line_added and 'SWADL\engine' in item:
-                        line_added = True
-                        result.append(DIVIDER + 'SWADL framework part:')
-                    if len(item.strip()) > 0:
-                        result.append(item)
-
-        if result:
-            result.append(DIVIDER + 'error part:')
-        return result
-
     def _make_swadl_test_error(self, message=None, reporting_dict=None):
         # Purpose: Produces a FrameworkError with the passed data
         framework_error = SWADLTestError(
@@ -474,15 +434,15 @@ class SWADLBase(object):
 
     def assert_not_equal(self, x=None, y=None, **kwargs):
         # Description: records assertion failure if condition not met
-        return self._test_equal_common(x=x, y=y, **kwargs)
+        return self._test_not_equal_common(x=x, y=y, **kwargs)
 
     def require_not_equal(self, x=None, y=None, **kwargs):
         # Description: records error if condition not met
-        return self._test_equal_common(x=x, y=y, **kwargs)
+        return self._test_not_equal_common(x=x, y=y, **kwargs)
 
     def expect_not_equal(self, x=None, y=None, **kwargs):
         # Description: records a warning if condition not met
-        return self._test_equal_common(x=x, y=y, **kwargs)
+        return self._test_not_equal_common(x=x, y=y, **kwargs)
 
     # -------------------------------------------------------------------------------
     # Validation: true
@@ -694,13 +654,9 @@ class SWADLBase(object):
         return self._test_not_in_common(member=member, container=container, **kwargs)
 
     _DEFAULT_POLLING_INTERVAL = 0.01
-    @staticmethod
-    def sleep(seconds=None):
-        """
-        Yields CPU time for other processes during timeouts. The 0.3 seconds
-        default value is set via _DEFAULT_POLLING_INTERVAL.
-        used for yielding CPU time to the application under test.
-        """
+
+    def sleep(self, seconds=None):
+        # Yields CPU time to the application under test during polling loops.
         if seconds is None:
             seconds = self._DEFAULT_POLLING_INTERVAL
         time.sleep(seconds)
