@@ -10,8 +10,8 @@ To add a new interface (e.g. Playwright):
 
 from SWADL.engine.swadl_exceptions import SWADLStaleElementError
 
-
 # ── Base classes (act as both protocol definition and documentation) ──────────
+
 
 class SWADLElement:
     """Wraps a single UI element. One implementation per interface."""
@@ -52,6 +52,12 @@ class SWADLDriver:
     def quit(self):
         raise NotImplementedError
 
+    def maximize_window(self):
+        # Maximize the active automation surface. Page sections call this
+        # during load_page() to ensure consistent layout for selectors.
+        # Stub-raise here; concrete adapters override.
+        raise NotImplementedError
+
     @property
     def actions(self):
         # Returns an action-chain builder for gesture sequences (e.g. mouseover).
@@ -60,6 +66,7 @@ class SWADLDriver:
 
 
 # ── Selenium adapter ──────────────────────────────────────────────────────────
+
 
 class SeleniumElement(SWADLElement):
 
@@ -80,6 +87,7 @@ class SeleniumElement(SWADLElement):
             return fn()
         except Exception as e:
             from selenium.common.exceptions import StaleElementReferenceException
+
             if isinstance(e, StaleElementReferenceException):
                 raise SWADLStaleElementError() from e
             raise
@@ -111,8 +119,11 @@ class SeleniumDriver(SWADLDriver):
 
     def find_elements(self, selector):
         from selenium.webdriver.common.by import By
-        return [SeleniumElement(e) for e in
-                self._driver.find_elements(By.CSS_SELECTOR, selector)]
+
+        return [
+            SeleniumElement(e)
+            for e in self._driver.find_elements(By.CSS_SELECTOR, selector)
+        ]
 
     def save_screenshot(self, filename):
         self._driver.save_screenshot(filename)
@@ -123,15 +134,20 @@ class SeleniumDriver(SWADLDriver):
     def quit(self):
         self._driver.quit()
 
+    def maximize_window(self):
+        self._driver.maximize_window()
+
     @property
     def actions(self):
         from selenium.webdriver.common.action_chains import ActionChains
+
         return ActionChains(self._driver)
 
 
 # ── pywinauto adapter (stub) ──────────────────────────────────────────────────
 # Selector format: comma-separated key=value pairs, e.g. "auto_id=btnOK,class_name=Button"
 # Keys map to pywinauto child_window() criteria.
+
 
 class PywinautoElement(SWADLElement):
 
@@ -160,10 +176,10 @@ class PywinautoElement(SWADLElement):
         self._element.click_input()
 
     def send_keys(self, *value, **kwargs):
-        self._element.type_keys(''.join(str(v) for v in value))
+        self._element.type_keys("".join(str(v) for v in value))
 
     def submit(self):
-        self._element.type_keys('{ENTER}')
+        self._element.type_keys("{ENTER}")
 
 
 class PywinautoDriver(SWADLDriver):
@@ -174,10 +190,10 @@ class PywinautoDriver(SWADLDriver):
 
     def find_elements(self, selector):
         criteria = {}
-        for part in selector.split(','):
+        for part in selector.split(","):
             part = part.strip()
-            if '=' in part:
-                k, v = part.split('=', 1)
+            if "=" in part:
+                k, v = part.split("=", 1)
                 criteria[k.strip()] = v.strip()
         controls = self._window.children(**criteria)
         return [PywinautoElement(c) for c in controls]
@@ -190,6 +206,12 @@ class PywinautoDriver(SWADLDriver):
 
     def quit(self):
         self._app.kill()
+
+    def maximize_window(self):
+        # Stub until pywinauto path is activated end-to-end. Real impl would
+        # call self._window.maximize() — verify against actual pywinauto API
+        # when the activation ticket lands.
+        raise NotImplementedError("maximize_window not yet wired for pywinauto")
 
     @property
     def actions(self):

@@ -70,9 +70,9 @@ class SWADLBase(object):
         #         - substitution_sources - list of string, values to use when calling resolve_substitutions()
         #           from within this object
         #         - key/value pairs to apply to the instance
-        assert name or self.name, (
-            f"You must specify a valid 'name' keyword for this {self.__class__.__name__}"
-        )
+        assert (
+            name or self.name
+        ), f"You must specify a valid 'name' keyword for this {self.__class__.__name__}"
         # Page sections can just have their class as their names, but for all others, it should be added.
         if not self.__class__.__name__ == name:
             name = f"({self.__class__.__name__}){name}"
@@ -84,9 +84,10 @@ class SWADLBase(object):
 
         # these are to make this functionality available to every object using it
         self.cfgdict = cfgdict
-        self.driver = self.cfgdict[DRIVER]
-        self.actions = self.driver.actions
         self.test_data = self.cfgdict[TEST_DATA]
+        # NOTE: self.driver and self.actions are lazy properties (see below).
+        # Accessing self.driver triggers webdriver creation on first use; no
+        # browser spawns until something actually needs to drive one.
 
         # sort out substitutions. If this has been specified, it's an instance override, so
         # replace the inherited one.
@@ -105,19 +106,19 @@ class SWADLBase(object):
     def __str__(self):
         # Purpose: adds the self.name to the base __str__() result
         base = super().__str__()
-        return f'{base}/{self.get_name()}'
+        return f"{base}/{self.get_name()}"
 
     def get_name(self):
         # Purpose: Returns the name of the thing
         # Notes: If self.parent is not None, prefixes the name with the parent's name
         # the names get used all over to identify the object we're reporting on
-        test_name = cfgdict.get(TEST_NAME, '')
+        test_name = cfgdict.get(TEST_NAME, "")
         if test_name:
             if self.name != test_name:
                 test_name = f"{test_name}/"
             else:
                 test_name = ""
-        if hasattr(self, 'parent') and self.parent:
+        if hasattr(self, "parent") and self.parent:
             parent_name = f"{self.parent.name}."
         else:
             parent_name = ""
@@ -129,11 +130,11 @@ class SWADLBase(object):
         test_name = cfgdict[TEST_NAME]
         class_name = self.__class__.__name__
         method_name = inspect.stack()[1][0].f_code.co_name
-        return f'{test_name}/{class_name}.{method_name}'
+        return f"{test_name}/{class_name}.{method_name}"
 
     def _get_instance_name(self):
         # Purpose: Returns the best guess name of the instance name
-        result = 'unknown instance'
+        result = "unknown instance"
         raw = self._get_instance_names()
         if len(raw) > 0:
             result = raw[0]
@@ -153,7 +154,7 @@ class SWADLBase(object):
             if value == self:
                 result.append(key)
         if not result:
-            result = ['unknown instance']
+            result = ["unknown instance"]
         return result
 
     #######################################################################
@@ -190,6 +191,23 @@ class SWADLBase(object):
         if end_time < time_now:
             end_time = time_now + minimum
         return end_time - time_now
+
+    #######################################################################
+    # Driver access (lazy)
+    @property
+    def driver(self):
+        # Purpose: Lazy access to the active SWADLDriver. Creates webdriver
+        # on first call. Avoids spawning browsers from consumers that import
+        # SWADL but never need one.
+        from SWADL.engine.swadl_cfg import get_driver
+
+        return get_driver()
+
+    @property
+    def actions(self):
+        # Purpose: Lazy access to the action-chain builder for the active
+        # driver. Re-derived each call to stay current with driver state.
+        return self.driver.actions
 
     #######################################################################
     # Logging
@@ -232,7 +250,7 @@ class SWADLBase(object):
         #    Without rendering any errors
         def __missing__(self, key):
             # Purpose: Just substitutes the missing element back into the string
-            return '{' + key + '}'
+            return "{" + key + "}"
 
     def resolve_substitutions(self, in_string, substitution_sources=None):
         # Purpose: Perform f-string style substitutions without errors for missing keys, and using
@@ -275,7 +293,7 @@ class SWADLBase(object):
         list_of_keys = [] if not list_of_keys else list_of_keys
         for key in list_of_keys:
             if key in modified_dict:
-                del (modified_dict[key])
+                del modified_dict[key]
         return modified_dict
 
     def _remove_keys_webdriver_doesnt_like(self, incoming_dict):
@@ -283,9 +301,7 @@ class SWADLBase(object):
         # Inputs: - (dict)incoming_dict: a kwargs style dict
         # Returns: a copy of the dict with the noted keys removed
         # Notes: It is expected that we'll keep adding to this list
-        keys_webdriver_doesnt_like = (
-            TIMEOUT,
-        )
+        keys_webdriver_doesnt_like = (TIMEOUT,)
         return self._remove_keys(incoming_dict, keys_webdriver_doesnt_like)
 
     #######################################################################
@@ -298,8 +314,8 @@ class SWADLBase(object):
         # Usage: exc_info = process_stack_trace(exc_info)
         # sometimes we have a trailing blank line or two
         exc_info = exc_info if exc_info else traceback.format_stack()
-        while exc_info[-1].strip() == '':
-            del (exc_info[-1])
+        while exc_info[-1].strip() == "":
+            del exc_info[-1]
         return exc_info
 
     def _make_swadl_test_error(self, message=None, reporting_dict=None):
@@ -317,22 +333,23 @@ class SWADLBase(object):
         )
         return framework_error
 
-    def _assertion_post_processor(self,
-                                  message=None,
-                                  helper=None,
-                                  **kwargs,
-                                  ):
+    def _assertion_post_processor(
+        self,
+        message=None,
+        helper=None,
+        **kwargs,
+    ):
         # Purpose; Takes information provided by the caller about the
         # kind of assertion/error/warning, and completes the test,
         # recording and logging steps.
         caller = inspect.stack()[2][0].f_code.co_name
         reporting_dict = SWADLDict()
         reporting_dict[ID] = (
-            f'SWADL:Validation:'
-            f'{self.get_name()}'
-            f'.{caller} '
-            f'at {self.get_timestamp()} '
-            f'with OID {id(reporting_dict)}'
+            f"SWADL:Validation:"
+            f"{self.get_name()}"
+            f".{caller} "
+            f"at {self.get_timestamp()} "
+            f"with OID {id(reporting_dict)}"
         )
         self.test_data[reporting_dict[ID]] = reporting_dict
         # now assume each group will have a group processor
@@ -346,7 +363,9 @@ class SWADLBase(object):
         reporting_dict[LOGICAL_RESULT] = False  # overwritten later we hope :)
         reporting_dict[RESULT] = "Failed to complete"  # overwritten later we hope :)
         reporting_dict[TIME_STARTED] = time.time()
-        reporting_dict[TIME_FINISHED] = time.time()  # this is here just in case it doesn't finish
+        reporting_dict[TIME_FINISHED] = (
+            time.time()
+        )  # this is here just in case it doesn't finish
 
         # now we do the compare, protected from any kind of unexpected data types or whatever
         try:
@@ -355,9 +374,11 @@ class SWADLBase(object):
             # this next line re-raises the same class with additional data
             self.test_data[TEST_OBJECT].accumulated_failures.append(reporting_dict)
             raise e.__class__(
-                "INVALID RESULT WHEN PERFORMING LOGICAL COMPARE\n" +
-                self.bannerize(title=e.__class__.__name__, data=e.__dict__) + "\n" +
-                self.bannerize(self.cfgdict) + "\n"
+                "INVALID RESULT WHEN PERFORMING LOGICAL COMPARE\n"
+                + self.bannerize(title=e.__class__.__name__, data=e.__dict__)
+                + "\n"
+                + self.bannerize(self.cfgdict)
+                + "\n"
             )
 
         # and if that didn't blow up, now we finish up.
@@ -367,7 +388,9 @@ class SWADLBase(object):
             reporting_dict[RESULT] = PASSED
         else:
             reporting_dict[RESULT] = FAILED
-            reporting_dict[STACKTRACE] = self._process_stack_trace(traceback.format_stack())
+            reporting_dict[STACKTRACE] = self._process_stack_trace(
+                traceback.format_stack()
+            )
             message = self.bannerize(reporting_dict)
             self.test_data[TEST_OBJECT].accumulated_failures.append(reporting_dict)
             caller = reporting_dict[CALLER].upper()
@@ -382,9 +405,14 @@ class SWADLBase(object):
             elif caller.upper().startswith(EXPECT):
                 self.log.warning(message)
                 if reporting_dict[KWARGS].get(FATAL, False):
-                    raise Exception("A WARNING WAS MARKED AS FATAL, THIS SHOULDN'T BE!\n" + message)
+                    raise Exception(
+                        "A WARNING WAS MARKED AS FATAL, THIS SHOULDN'T BE!\n" + message
+                    )
             else:
-                message = "UNKNOWN ORIGIN POINT FOR VALIDATION, THIS SHOULDN'T BE!\n" + message
+                message = (
+                    "UNKNOWN ORIGIN POINT FOR VALIDATION, THIS SHOULDN'T BE!\n"
+                    + message
+                )
                 self.log.error(message)
                 raise Exception(message)
 
@@ -400,7 +428,7 @@ class SWADLBase(object):
     def _test_equal_common(self, **kwargs):
         # Purpose: to get all the data passed to the post processor
         return self._assertion_post_processor(
-            message=f'x={kwargs[X]} == y={kwargs[Y]}',
+            message=f"x={kwargs[X]} == y={kwargs[Y]}",
             helper=self._logical_test_equal,
             **kwargs,
         )
@@ -427,7 +455,7 @@ class SWADLBase(object):
     def _test_not_equal_common(self, **kwargs):
         # Purpose: to get all the data passed to the post processor
         return self._assertion_post_processor(
-            message=f'x={kwargs[X]} != y={kwargs[Y]}',
+            message=f"x={kwargs[X]} != y={kwargs[Y]}",
             helper=self._logical_test_not_equal,
             **kwargs,
         )
@@ -454,7 +482,7 @@ class SWADLBase(object):
     def _test_true_common(self, **kwargs):
         # Purpose: to get all the data passed to the post processor
         return self._assertion_post_processor(
-            message=f'exper={kwargs[EXPER]} is True',
+            message=f"exper={kwargs[EXPER]} is True",
             helper=self._logical_test_true,
             **kwargs,
         )
@@ -480,7 +508,7 @@ class SWADLBase(object):
 
     def _test_false_common(self, **kwargs):
         return self._assertion_post_processor(
-            message=f'exper={kwargs[EXPER]} should evaluate to False',
+            message=f"exper={kwargs[EXPER]} should evaluate to False",
             helper=self._logical_test_false,
             **kwargs,
         )
@@ -506,7 +534,7 @@ class SWADLBase(object):
 
     def _test_is_common(self, **kwargs):
         return self._assertion_post_processor(
-            message=f'exper1={kwargs[EXPER1]} is exper2={kwargs[EXPER2]}',
+            message=f"exper1={kwargs[EXPER1]} is exper2={kwargs[EXPER2]}",
             helper=self._logical_test_is,
             **kwargs,
         )
@@ -532,7 +560,7 @@ class SWADLBase(object):
 
     def _test_is_not_common(self, **kwargs):
         return self._assertion_post_processor(
-            message=f'exper1={kwargs[EXPER1]} is not exper2={kwargs[EXPER2]}',
+            message=f"exper1={kwargs[EXPER1]} is not exper2={kwargs[EXPER2]}",
             helper=self._logical_test_is_not,
             **kwargs,
         )
@@ -558,7 +586,7 @@ class SWADLBase(object):
 
     def _test_is_none_common(self, **kwargs):
         return self._assertion_post_processor(
-            message=f'obj={kwargs[OBJ]} is None',
+            message=f"obj={kwargs[OBJ]} is None",
             helper=self._logical_test_is_none,
             **kwargs,
         )
@@ -584,7 +612,7 @@ class SWADLBase(object):
 
     def _test_is_not_none_common(self, **kwargs):
         return self._assertion_post_processor(
-            message=f'obj={kwargs[OBJ]} is not None',
+            message=f"obj={kwargs[OBJ]} is not None",
             helper=self._logical_test_is_not_none,
             **kwargs,
         )
@@ -610,7 +638,7 @@ class SWADLBase(object):
 
     def _test_in_common(self, **kwargs):
         return self._assertion_post_processor(
-            message=f'member={kwargs[MEMBER]} is in container={kwargs[CONTAINER]}',
+            message=f"member={kwargs[MEMBER]} is in container={kwargs[CONTAINER]}",
             helper=self._logical_test_in,
             **kwargs,
         )
@@ -636,7 +664,7 @@ class SWADLBase(object):
 
     def _test_not_in_common(self, **kwargs):
         return self._assertion_post_processor(
-            message=f'member={kwargs[MEMBER]} is not in container={kwargs[CONTAINER]}',
+            message=f"member={kwargs[MEMBER]} is not in container={kwargs[CONTAINER]}",
             helper=self._logical_test_not_in,
             **kwargs,
         )

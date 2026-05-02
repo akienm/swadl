@@ -1,4 +1,3 @@
-
 # standard libraries
 import os
 from selenium import webdriver
@@ -85,11 +84,31 @@ driver_creators = {
     "edge": _create_edge_webdriver,
 }
 
-try:
-    method_key = cfgdict[SELENIUM_BROWSER]
-    method_to_call = driver_creators[method_key]
-    method_to_call()
-except Exception as e:
-    raise Exception(
-        f"{e}\nPerhaps {cfgdict[SELENIUM_BROWSER]} is not yet supported by the framework?"
-    )
+
+def get_driver():
+    # Purpose: Return the active driver, creating it on first call.
+    # Why lazy: importing swadl_cfg used to spawn a browser at module load,
+    # which leaked Chrome processes from any consumer that imported SWADL
+    # but never intended to drive a browser (e.g., a test that should skip,
+    # or pywinauto-only automation). Driver now spins up on first access.
+    if cfgdict.get(DRIVER) is None:
+        method_key = cfgdict[SELENIUM_BROWSER]
+        creator = driver_creators.get(method_key)
+        if creator is None:
+            raise Exception(
+                f"Browser '{method_key}' is not yet supported by the framework"
+            )
+        creator()
+    return cfgdict[DRIVER]
+
+
+def _quit_driver_if_running():
+    # Purpose: Quit and clear the active driver if one was created.
+    # Called from SWADLBaseAutomation.quit() and SWADLTest.tearDown.
+    driver = cfgdict.get(DRIVER)
+    if driver is not None:
+        try:
+            driver.quit()
+        except Exception:
+            pass
+        cfgdict[DRIVER] = None
