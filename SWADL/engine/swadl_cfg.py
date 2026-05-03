@@ -12,6 +12,7 @@ from SWADL.engine.swadl_constants import SELENIUM_BROWSER
 from SWADL.engine.swadl_constants import SELENIUM_CONTROL_DEFAULT_TIMEOUT
 from SWADL.engine.swadl_constants import SELENIUM_PAGE_DEFAULT_TIMEOUT
 from SWADL.engine.swadl_constants import SELENIUM_TEST_SET_FILE
+from SWADL.engine.swadl_constants import SELENIUM_USER_DATA_DIR
 from SWADL.engine.swadl_constants import SWADLTEST_URL
 from SWADL.engine.swadl_constants import SWADLTEST_VERBOSE
 from SWADL.engine.swadl_constants import DRIVER
@@ -39,6 +40,7 @@ TEST_PARAMETERS = {
     SELENIUM_CONTROL_DEFAULT_TIMEOUT: 20,
     SELENIUM_PAGE_DEFAULT_TIMEOUT: 40,
     SELENIUM_TEST_SET_FILE: None,
+    SELENIUM_USER_DATA_DIR: None,
     SWADLTEST_URL: None,
     SWADLTEST_VERBOSE: False,
 }
@@ -69,8 +71,28 @@ if cfgdict[SELENIUM_TEST_SET_FILE]:
 
 # Section: webdriver creation
 # Purpose: Sorts out the invocation parameters by browser
+def _build_chrome_options():
+    """Construct webdriver.ChromeOptions from cfgdict knobs.
+
+    Returns None when no options are needed (so the caller can pass
+    nothing to webdriver.Chrome and inherit the default behavior).
+    Returns a ChromeOptions instance with --user-data-dir set when
+    SELENIUM_USER_DATA_DIR is configured.
+    """
+    user_data_dir = cfgdict.get(SELENIUM_USER_DATA_DIR)
+    if not user_data_dir:
+        return None
+    options = webdriver.ChromeOptions()
+    options.add_argument(f"--user-data-dir={user_data_dir}")
+    return options
+
+
 def _create_chrome_webdriver():
-    cfgdict[DRIVER] = SeleniumDriver(webdriver.Chrome())
+    options = _build_chrome_options()
+    if options is None:
+        cfgdict[DRIVER] = SeleniumDriver(webdriver.Chrome())
+    else:
+        cfgdict[DRIVER] = SeleniumDriver(webdriver.Chrome(options=options))
     return cfgdict[DRIVER]
 
 
