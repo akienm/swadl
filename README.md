@@ -279,15 +279,67 @@ Validation dict keys:
 
 ## Interface Support
 
-SWADL ships with adapters for:
+SWADL ships with adapters for five automation libraries. The right choice depends on what you're automating:
 
-| Interface | Class | Notes |
-|-----------|-------|-------|
-| Selenium | `SeleniumDriver` / `SeleniumElement` | default; Chrome and Edge supported |
-| pywinauto | `PywinautoDriver` / `PywinautoElement` | desktop apps; stub included, ready to wire up |
+| Interface | Driver class | Best for | Platform | Selector type |
+|-----------|-------------|----------|----------|---------------|
+| **Selenium** | `SeleniumDriver` | Web apps (Chrome, Edge) | Cross-platform | CSS / XPath |
+| **Playwright** | `PlaywrightDriver` | Modern SPAs, async-heavy web apps | Cross-platform | CSS / XPath / text |
+| **pyautogui** | `PyautoguiDriver` | Any app, no accessibility tree required | Cross-platform | Image file (screenshot) |
+| **dogtail** | `DogtailDriver` | Native Linux/GTK/KDE desktop apps | Linux only | `"role:name"` (AT-SPI2) |
+| **pywinauto** | `PywinautoDriver` | Windows desktop apps (UIA / Win32) | Windows only | `"key=value"` criteria |
 
-To add a new interface, subclass `SWADLDriver` and `SWADLElement` in
-`SWADL/engine/swadl_driver.py` and register a creator in `swadl_cfg.py`.
+### When to use each
+
+**Selenium** — the default. Use for any web app where you control the browser. Mature, well-documented, huge selector support.
+
+**Playwright** — prefer over Selenium for modern SPAs with heavy client-side rendering. Built-in auto-waiting means fewer explicit sleeps. The `page.locator()` API finds elements without needing explicit waits.
+
+**pyautogui** — the nuclear option. Finds elements by screenshot-matching rather than the DOM or accessibility tree. Use when:
+- The app has no AT-SPI2 support (many Electron, Qt, and proprietary apps)
+- You can't install browser automation
+- Pixel-perfect UI testing is the goal
+Limitation: `element.text` is not available (no accessibility tree); use OCR or read state another way.
+
+**dogtail** — the Linux equivalent of pywinauto. Walks the AT-SPI2 accessibility tree, so selectors are semantic (`"push button:OK"`, `"text"`). Requires `at-spi2-core` service running (`export AT_SPI_BUS_ADDRESS` or `dbus-run-session`). Works well with GNOME, KDE, GTK apps.
+
+**pywinauto** — Windows only. Walks the UIA/Win32 accessibility tree. Selector format: `"auto_id=btnOK,class_name=Button"` (comma-separated key=value pairs).
+
+### Choosing between Playwright and Selenium
+
+Both drive real browsers via Chrome DevTools Protocol. Playwright advantages:
+- Auto-waits for elements to be actionable before interacting (fewer flaky tests)
+- `locator.all()` for element lists without manual WebDriverWait
+- Better TypeScript/IDE support for test authors
+- Built-in screenshot diff support
+
+Selenium advantages:
+- Longer community history, more Stack Overflow answers
+- Works with Firefox, Safari, and Edge out of the box
+- Widely understood in QA teams
+
+### Choosing between dogtail and pyautogui (Linux desktop)
+
+Use **dogtail** when the app exposes AT-SPI2 (GNOME/GTK apps, most KDE apps). Selectors are semantic and stable across UI changes.
+
+Use **pyautogui** when the app doesn't expose AT-SPI2 (many Electron apps, Qt apps without AT-SPI plugin, proprietary tools). It degrades gracefully but requires maintaining reference screenshot images.
+
+### Adding a new interface
+
+Subclass `SWADLDriver` and `SWADLElement` in `SWADL/engine/swadl_driver.py`:
+
+```python
+class MyElement(SWADLElement):
+    def text(self): ...
+    def click(self): ...
+    def send_keys(self, *value, **kwargs): ...
+    # ... implement remaining abstract methods
+
+class MyDriver(SWADLDriver):
+    def find_elements(self, selector): ...
+    def quit(self): ...
+    # ... implement remaining abstract methods
+```
 
 The interface is selected via the `SELENIUM_BROWSER` environment variable (default: `chrome`).
 
@@ -330,4 +382,8 @@ swadl/
 
 - Python 3.9+
 - Selenium 4+ (Chrome or Edge WebDriver on PATH)
-- pywinauto (optional, for desktop automation)
+- Selenium 4+ (Chrome or Edge WebDriver on PATH)
+- Playwright (optional): `pip install playwright && playwright install chromium`
+- pyautogui (optional, cross-platform): `pip install pyautogui`
+- dogtail (optional, Linux AT-SPI2): `pip install dogtail` + `at-spi2-core` system service
+- pywinauto (optional, Windows desktop): `pip install pywinauto`
