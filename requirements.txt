@@ -2,3 +2,4 @@ selenium
 pyautogui
 dogtail
 playwright
+python-diagnostic-base-class>=0.1

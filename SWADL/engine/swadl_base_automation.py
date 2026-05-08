@@ -24,9 +24,15 @@ Pattern:
     # browser quits automatically on context exit
 """
 
+from __future__ import annotations
+
+from pathlib import Path
+
 from SWADL.engine.swadl_base import SWADLBase
 from SWADL.engine.swadl_cfg import _quit_driver_if_running, cfgdict
 from SWADL.engine.swadl_constants import TEST_OBJECT
+
+_DEFAULT_LOG_ROOT = Path("swadl_logs")
 
 
 class SWADLBaseAutomation(SWADLBase):
@@ -36,6 +42,8 @@ class SWADLBaseAutomation(SWADLBase):
     # Purpose: Collects non-fatal validation results from
     # _assertion_post_processor. Lives here (not just in SWADLTest) so
     # non-test automation can also gather expect_*/require_* findings.
+
+    _tagged_logger = None
 
     def __init__(self, name=None, **kwargs):
         # Auto-name from class if not provided. Automation roots usually
@@ -53,6 +61,42 @@ class SWADLBaseAutomation(SWADLBase):
         # a None reference. SWADLTest overrides this anyway with itself.
         self.test_data[TEST_OBJECT] = self
         cfgdict[TEST_OBJECT] = self
+
+    # ── Performance stopwatch ─────────────────────────────────────────────
+
+    @property
+    def logger(self):
+        """Tagged loguru proxy. self.logger.perf('msg') logs with tag=perf."""
+        if self.__class__._tagged_logger is None:
+            from diagnostic_base.tagged_logger import TaggedLogger
+
+            self.__class__._tagged_logger = TaggedLogger()
+        return self.__class__._tagged_logger
+
+    def stopwatch(
+        self,
+        stopwatch_id: str,
+        *,
+        comment: str = "",
+        log_root: Path | None = None,
+    ):
+        """Return a Stopwatch bound to this automation class.
+
+        Usage:
+            with self.stopwatch("load_page") as t:
+                self.load_page()
+        """
+        from diagnostic_base.perf import Stopwatch
+
+        return Stopwatch(
+            stopwatch_id,
+            device_id=type(self).__name__.lower(),
+            class_name=type(self).__name__,
+            comment=comment,
+            log_root=log_root or _DEFAULT_LOG_ROOT,
+        )
+
+    # ── Lifecycle ─────────────────────────────────────────────────────────
 
     def quit(self):
         # Purpose: Explicit cleanup — quit the driver if one was created.
